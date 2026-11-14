@@ -1,0 +1,186 @@
+/* Review-environment layout only. Not part of the NHIS package styles. */
+.sb-page {
+  max-width: 1200px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.sb-h1 {
+  font: var(--nhis-type-display-font);
+  margin: 0;
+}
+.sb-h2 {
+  font: var(--nhis-type-heading-font);
+  margin: 16px 0 0;
+}
+.sb-lede {
+  max-width: 820px;
+  margin: 0;
+  color: var(--nhis-color-text-secondary);
+}
+.sb-note {
+  margin: 0;
+  color: var(--nhis-color-text-secondary);
+}
+.sb-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+}
+.sb-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+}
+.sb-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.sb-swatch {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  background: var(--nhis-color-surface-panel);
+  border: 1px solid var(--nhis-color-border-subtle);
+  border-radius: 6px;
+}
+.sb-swatch__chip {
+  width: 48px;
+  height: 48px;
+  border-radius: 4px;
+  border: 1px solid var(--nhis-color-border-control);
+  flex: none;
+}
+.sb-swatch__name {
+  font: var(--nhis-type-label-font);
+}
+.sb-swatch__hex,
+.sb-swatch__ratio,
+.sb-swatch__role {
+  color: var(--nhis-color-text-secondary);
+  font-size: 14px;
+}
+.sb-hazard {
+  background: repeating-linear-gradient(-45deg, var(--nhis-color-hazard-stripe-light) 0 6px, var(--nhis-color-hazard-stripe-dark) 6px 12px);
+}
+.sb-table {
+  border-collapse: collapse;
+  width: 100%;
+}
+.sb-table th,
+.sb-table td {
+  text-align: left;
+  padding: 8px 12px 8px 0;
+  border-bottom: 1px solid var(--nhis-color-border-subtle);
+  vertical-align: middle;
+}
+.sb-table th {
+  font: var(--nhis-type-label-font);
+  color: var(--nhis-color-text-secondary);
+}
+.sb-specimen {
+  font-size: 40px;
+  margin: 0;
+}
+.sb-space {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.sb-space__row {
+  display: grid;
+  grid-template-columns: 120px auto 60px;
+  gap: 12px;
+  align-items: center;
+}
+.sb-space__bar {
+  height: 12px;
+  background: var(--nhis-color-text-secondary);
+}
+.sb-radius {
+  padding: 24px;
+  border: 2px solid var(--nhis-color-border-strong);
+}
+.sb-glyphs {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px;
+}
+.sb-glyph {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  border: 1px solid var(--nhis-color-border-subtle);
+  border-radius: 4px;
+  font-size: 14px;
+}
+.sb-label {
+  font: var(--nhis-type-label-font);
+  color: var(--nhis-color-text-secondary);
+  margin: 0 0 6px;
+}
+.sb-cols {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+.sb-fixture {
+  display: inline-flex;
+  align-self: flex-start;
+  padding: 2px 8px;
+  border: 1px dashed var(--nhis-color-mode-simulation-stroke);
+  border-radius: 2px;
+  color: var(--nhis-color-mode-simulation-stroke);
+  font: var(--nhis-type-label-font);
+}
+.sb-log {
+  font: var(--nhis-type-tabular-font);
+  font-size: 14px;
+  color: var(--nhis-color-text-secondary);
+  background: var(--nhis-color-surface-panel);
+  border: 1px solid var(--nhis-color-border-subtle);
+  border-radius: 4px;
+  padding: 8px 12px;
+  max-height: 160px;
+  overflow: auto;
+  margin: 0;
+}
+
+/* ---------- Pattern compositions ---------- */
+.pat-overview {
+  display: grid;
+  grid-template-columns: minmax(0, 8fr) minmax(0, 4fr);
+  gap: var(--nhis-space-gutter);
+  padding: var(--nhis-space-stack) var(--nhis-space-page-margin);
+  align-items: start;
+}
+.pat-overview__left {
+  display: flex;
+  flex-direction: column;
+  gap: var(--nhis-space-gutter);
+  min-width: 0;
+}
+.pat-overview__state {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.pat-overview__h1 {
+  margin: 0;
+  font: var(--nhis-type-display-font);
+}
+.pat-overview__summary,
+.pat-overview__more {
+  margin: 0;
+  color: var(--nhis-color-text-secondary);
+}
+.pat-overview__vitals {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--nhis-space-gutter);
+}

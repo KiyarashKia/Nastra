@@ -1,0 +1,107 @@
+.nhis-mission-header {
+  position: sticky;
+  top: 0;
+  z-index: var(--nhis-z-sticky);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--nhis-primitive-space-4);
+  min-height: var(--nhis-size-header-height);
+  padding: 0 var(--nhis-space-page-margin);
+  background: var(--nhis-color-surface-panel);
+  border-bottom: var(--nhis-border-hairline) solid var(--nhis-color-border-subtle);
+}
+.nhis-mission-header__identity,
+.nhis-mission-header__status {
+  display: flex;
+  align-items: center;
+  gap: var(--nhis-primitive-space-4);
+  min-width: 0;
+}
+.nhis-mission-header__status {
+  gap: var(--nhis-primitive-space-4);
+  flex: none;
+}
+.nhis-mission-header__identity {
+  flex: 1 1 auto;
+  overflow: hidden;
+}
+.nhis-mission-header__logo {
+  display: inline-flex;
+  width: 32px;
+  height: 32px;
+}
+.nhis-mission-header__logo svg,
+.nhis-mission-header__logo img {
+  width: 100%;
+  height: 100%;
+}
+.nhis-mission-header__product {
+  font: var(--nhis-type-title-font);
+  letter-spacing: 0.02em;
+}
+.nhis-mission-header__divider {
+  width: 1px;
+  height: 24px;
+  background: var(--nhis-color-border-subtle);
+}
+.nhis-mission-header__crew {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--nhis-primitive-space-2);
+  color: var(--nhis-color-text-secondary);
+  white-space: nowrap;
+  min-width: 0;
+}
+.nhis-mission-header__crew > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.nhis-mission-header__crew-name {
+  font: var(--nhis-type-label-font);
+  color: var(--nhis-color-text-primary);
+}
+.nhis-mission-header__crew-role {
+  display: none;
+  font: var(--nhis-type-label-font);
+  font-weight: var(--nhis-primitive-font-weight-regular);
+  color: var(--nhis-color-text-secondary);
+  margin-left: var(--nhis-primitive-space-2);
+}
+@media (min-width: 1500px) {
+  .nhis-mission-header__crew-role {
+    display: inline;
+  }
+}
+.nhis-mission-header__clock {
+  font: var(--nhis-type-tabular-font);
+  color: var(--nhis-color-text-primary);
+  white-space: nowrap;
+}
+.nhis-mission-header__alerts {
+  background: none;
+  border: none;
+  padding: 4px 6px;
+  border-radius: var(--nhis-radius-control);
+  cursor: pointer;
+  min-height: var(--nhis-size-target-min);
+}
+.nhis-mission-header__alerts:hover {
+  background: var(--nhis-color-interactive-quiet-background-hover);
+}
+
+/* Simulation / training frame (A9). Violet inset ring around the whole workspace + label in header. */
+.nhis-station-frame {
+  min-height: 100%;
+}
+.nhis-station-frame.is-simulated {
+  box-shadow: inset 0 0 0 4px var(--nhis-color-mode-simulation-stroke);
+  background-image: repeating-linear-gradient(
+    -45deg,
+    var(--nhis-color-mode-simulation-tint) 0 2px,
+    transparent 2px 22px
+  );
+}
+.nhis-mission-header.is-simulated {
+  border-bottom: 2px solid var(--nhis-color-mode-simulation-stroke);
+}

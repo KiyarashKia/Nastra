@@ -1,0 +1,233 @@
+/* Shared semantic presentation. Components consume semantic tokens only. */
+
+/* ---------- PriorityBadge ---------- */
+.nhis-badge {
+  display: inline-flex;
+  align-self: flex-start;
+  flex: none;
+  align-items: center;
+  gap: var(--nhis-primitive-space-2);
+  min-height: 28px;
+  padding: 2px var(--nhis-primitive-space-2) 2px 6px;
+  border-radius: var(--nhis-radius-alert);
+  border: var(--nhis-border-hairline) solid transparent;
+  font: var(--nhis-type-label-font);
+  font-weight: var(--nhis-primitive-font-weight-bold);
+  white-space: nowrap;
+  --nhis-glyph-knockout: var(--nhis-color-status-emergency-fill);
+}
+.nhis-badge--lg {
+  min-height: 36px;
+  padding: 4px var(--nhis-primitive-space-3) 4px var(--nhis-primitive-space-2);
+}
+.nhis-badge__glyph {
+  display: inline-flex;
+}
+.nhis-badge__marker {
+  font-family: var(--nhis-font-family-mono);
+  font-weight: var(--nhis-primitive-font-weight-bold);
+  letter-spacing: -0.12em;
+  padding-right: 0.12em;
+}
+.nhis-badge--advisory {
+  background: var(--nhis-color-status-advisory-fill);
+  border-color: var(--nhis-color-status-advisory-stroke);
+  color: var(--nhis-color-status-advisory-on-fill);
+}
+.nhis-badge--caution {
+  background: var(--nhis-color-status-caution-fill);
+  border-color: var(--nhis-color-status-caution-stroke);
+  color: var(--nhis-color-status-caution-on-fill);
+}
+.nhis-badge--warning {
+  background: var(--nhis-color-status-warning-fill);
+  border-color: var(--nhis-color-status-warning-stroke);
+  color: var(--nhis-color-status-warning-on-fill);
+}
+/* Emergency: same red, distinguished by double ring, glyph, label and placement. */
+.nhis-badge--emergency {
+  background: var(--nhis-color-status-emergency-fill);
+  border-color: var(--nhis-color-status-emergency-stroke);
+  color: var(--nhis-color-status-emergency-on-fill);
+  outline: var(--nhis-component-alert-emergency-ring) double var(--nhis-color-status-emergency-on-fill);
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .nhis-badge--flashing {
+    box-shadow: 0 0 0 3px var(--nhis-color-text-primary);
+  }
+}
+
+/* ---------- StatusMark ---------- */
+.nhis-status-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font: var(--nhis-type-label-font);
+  color: var(--nhis-color-text-primary);
+}
+.nhis-status-mark--nominal {
+  color: var(--nhis-color-status-nominal-text);
+  font-weight: var(--nhis-primitive-font-weight-regular);
+}
+.nhis-status-mark--advisory .nhis-glyph {
+  color: var(--nhis-color-status-advisory-stroke);
+}
+.nhis-status-mark--caution .nhis-glyph {
+  color: var(--nhis-color-status-caution-stroke);
+}
+.nhis-status-mark--warning .nhis-glyph,
+.nhis-status-mark--emergency .nhis-glyph {
+  color: var(--nhis-color-status-warning-stroke);
+  --nhis-glyph-knockout: var(--nhis-color-surface-panel);
+}
+
+/* ---------- Data quality ---------- */
+.nhis-dq-group {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--nhis-primitive-space-2);
+}
+.nhis-dq {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 24px;
+  padding: 0 var(--nhis-primitive-space-2) 0 6px;
+  border: var(--nhis-border-hairline) dashed var(--nhis-color-data-degraded-stroke);
+  border-radius: var(--nhis-radius-tag);
+  font: var(--nhis-type-label-font);
+  color: var(--nhis-color-text-primary);
+  background: var(--nhis-color-surface-canvas);
+  white-space: nowrap;
+}
+.nhis-dq--live {
+  border-style: solid;
+  border-color: var(--nhis-color-border-subtle);
+  color: var(--nhis-color-text-secondary);
+}
+.nhis-dq--estimated,
+.nhis-dq--manual-entry {
+  border-style: solid;
+  border-color: var(--nhis-color-border-control);
+}
+.nhis-dq--stale,
+.nhis-dq--paused {
+  background-image: repeating-linear-gradient(-45deg, var(--nhis-color-data-hatch) 0 1.5px, transparent 1.5px 7px);
+}
+.nhis-dq__age {
+  color: var(--nhis-color-text-secondary);
+}
+
+/* ---------- Measurement ---------- */
+.nhis-measurement {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  color: var(--nhis-color-data-live);
+}
+.nhis-measurement__unit {
+  font: var(--nhis-type-label-font);
+  color: var(--nhis-color-text-secondary);
+}
+.nhis-measurement--primary .nhis-measurement__value {
+  font: var(--nhis-type-telemetry-primary-font);
+  letter-spacing: var(--nhis-type-telemetry-primary-letter-spacing);
+}
+.nhis-measurement--secondary .nhis-measurement__value {
+  font: var(--nhis-type-telemetry-secondary-font);
+}
+.nhis-measurement--tabular .nhis-measurement__value {
+  font: var(--nhis-type-tabular-font);
+}
+/* Stale / delayed: value stays readable; outline marks it as not current (A7, 03 §20). */
+.nhis-measurement--stale .nhis-measurement__value,
+.nhis-measurement--delayed .nhis-measurement__value {
+  color: var(--nhis-color-data-degraded-text);
+  outline: var(--nhis-border-hairline) dashed var(--nhis-color-data-degraded-stroke);
+  outline-offset: 3px;
+  border-radius: 1px;
+}
+.nhis-measurement--missing .nhis-measurement__value {
+  color: var(--nhis-color-text-secondary);
+}
+
+/* ---------- Evidence & confidence ---------- */
+.nhis-evidence-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font: var(--nhis-type-label-font);
+  color: var(--nhis-color-text-secondary);
+}
+.nhis-evidence-tag--ai-assessment,
+.nhis-evidence-tag--recommended-action {
+  color: var(--nhis-color-text-primary);
+}
+.nhis-confidence {
+  display: inline-flex;
+  align-items: center;
+  border: var(--nhis-border-hairline) solid var(--nhis-color-border-control);
+  border-radius: var(--nhis-radius-tag);
+  font: var(--nhis-type-label-font);
+  overflow: hidden;
+  white-space: nowrap;
+}
+.nhis-confidence__label {
+  padding: 1px var(--nhis-primitive-space-2);
+  color: var(--nhis-color-text-secondary);
+}
+.nhis-confidence__value {
+  padding: 1px var(--nhis-primitive-space-2);
+  background: var(--nhis-color-surface-overlay);
+  color: var(--nhis-color-text-primary);
+  font-weight: var(--nhis-primitive-font-weight-bold);
+}
+/* Low confidence is uncertainty, not urgency: dashed, not coloured (03 §15). */
+.nhis-confidence--low {
+  border-style: dashed;
+}
+
+/* ---------- Mode ---------- */
+.nhis-mode {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 28px;
+  padding: 0 var(--nhis-primitive-space-3) 0 var(--nhis-primitive-space-2);
+  border-radius: var(--nhis-radius-tag);
+  font: var(--nhis-type-label-font);
+  font-weight: var(--nhis-primitive-font-weight-bold);
+  white-space: nowrap;
+}
+.nhis-mode--live {
+  color: var(--nhis-color-text-secondary);
+  font-weight: var(--nhis-primitive-font-weight-medium);
+}
+.nhis-mode--simulated {
+  background: var(--nhis-color-mode-simulation-fill);
+  border: var(--nhis-border-hairline) solid var(--nhis-color-mode-simulation-stroke);
+  color: var(--nhis-color-mode-simulation-on-fill);
+}
+
+/* ---------- Link ---------- */
+.nhis-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font: var(--nhis-type-label-font);
+  color: var(--nhis-color-text-secondary);
+  white-space: nowrap;
+}
+.nhis-link--degraded,
+.nhis-link--disconnected,
+.nhis-link--unknown {
+  color: var(--nhis-color-text-primary);
+}
+.nhis-link__delay {
+  color: var(--nhis-color-text-secondary);
+}
+
+.nhis-time {
+  color: inherit;
+}

@@ -1,0 +1,372 @@
+/* NASTRA EVA simulation. Sizes come from visual-angle tokens via JS (px per degree). */
+.nhis-eva-sim {
+  display: flex;
+  flex-direction: column;
+  gap: var(--nhis-primitive-space-2);
+}
+.nhis-eva-sim__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  padding: 2px var(--nhis-primitive-space-2);
+  border-radius: var(--nhis-radius-tag);
+  background: var(--nhis-color-mode-simulation-fill);
+  color: var(--nhis-color-mode-simulation-on-fill);
+  font: var(--nhis-type-label-font);
+  font-weight: var(--nhis-primitive-font-weight-bold);
+}
+.nhis-eva-visor {
+  position: relative;
+  overflow: hidden;
+  background: #000;
+  border: 1px solid var(--nhis-color-border-subtle);
+  /* EVA glyphs and text: white (B22). Medium/bold only (B21). */
+  --eva-fg: var(--nhis-color-eva-text);
+  --eva-alert-fill: var(--nhis-color-eva-alert-fill);
+  --nhis-glyph-knockout: #000;
+  font-family: var(--nhis-font-family-sans);
+  font-weight: var(--nhis-primitive-font-weight-medium);
+  color: var(--eva-fg);
+}
+.nhis-eva-visor.is-monochrome-green {
+  --eva-fg: var(--nhis-color-eva-text-green);
+  --eva-alert-fill: transparent;
+}
+.nhis-eva-scene {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.nhis-eva-guides {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.nhis-eva-guides__horizon {
+  stroke: #6f8cff;
+  stroke-dasharray: 4 6;
+  stroke-width: 1;
+  opacity: 0.6;
+}
+.nhis-eva-guides__los {
+  fill: none;
+  stroke: #6f8cff;
+  stroke-dasharray: 2 6;
+  opacity: 0.5;
+}
+.nhis-eva-guides__clear {
+  fill: rgba(111, 140, 255, 0.06);
+  stroke: #6f8cff;
+  stroke-dasharray: 6 6;
+  opacity: 0.8;
+}
+.nhis-eva-sim__legend {
+  margin: 0;
+  font: var(--nhis-type-meta-font);
+  color: var(--nhis-color-text-secondary);
+}
+.nhis-eva-sim__legend span {
+  color: #9fb2ff;
+}
+.nhis-eva-overlay {
+  position: absolute;
+  inset: 0;
+}
+/* Additive optics: overlay light adds to the scene; black renders transparent (B23 worst case). */
+.nhis-eva-visor.is-additive .nhis-eva-overlay {
+  mix-blend-mode: screen;
+}
+.nhis-eva-anchor {
+  position: absolute;
+  /* Persistent content never crosses into the clear zone (B1). */
+  max-width: var(--eva-band);
+}
+
+/* Backing plate: tight, periphery only (B23). Under additive optics it cannot darken the scene. */
+.nhis-eva-plate {
+  background: var(--nhis-color-eva-plate);
+  border-radius: 3px;
+  padding: calc(var(--eva-ppd) * 0.12) calc(var(--eva-ppd) * 0.2);
+}
+
+.nhis-eva-text {
+  color: var(--eva-fg);
+  font-weight: var(--nhis-primitive-font-weight-medium);
+  letter-spacing: 0.01em;
+}
+.nhis-eva-text--primary {
+  font-weight: var(--nhis-primitive-font-weight-bold);
+}
+.nhis-eva-num {
+  font-family: var(--nhis-font-family-mono);
+  letter-spacing: -0.03em;
+}
+
+/* ---------- Status strip ---------- */
+.nhis-eva-strip__list {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--eva-ppd) * 0.12);
+}
+.nhis-eva-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 0 calc(var(--eva-ppd) * 0.2);
+  color: var(--eva-fg);
+}
+.nhis-eva-row__value {
+  grid-column: 2;
+}
+.nhis-eva-row__glyph {
+  display: inline-flex;
+  width: 18px;
+  align-self: center;
+}
+.nhis-eva-row__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--eva-fg);
+}
+
+.nhis-eva-row__unit {
+  font-family: var(--nhis-font-family-sans);
+  font-weight: var(--nhis-primitive-font-weight-medium);
+  font-size: 0.7em;
+}
+
+/* Lowlighted, not removed (B14). */
+.nhis-eva-row.is-lowlight {
+  opacity: var(--nhis-eva-opacity-lowlight);
+}
+.nhis-eva-row.is-out-of-range,
+.nhis-eva-row.is-degraded {
+  outline: 2px solid var(--eva-fg);
+  outline-offset: 2px;
+}
+.nhis-eva-row.is-degraded {
+  outline-style: dashed;
+}
+.nhis-eva-row.is-trending {
+  outline: 1px solid var(--eva-fg);
+  outline-offset: 2px;
+}
+.nhis-eva-row.is-revealed {
+  opacity: 1;
+}
+/* Dwell progress: visible, reversible, reveal-only (B31). */
+.nhis-eva-row__dwell {
+  position: absolute;
+  left: 0;
+  bottom: -3px;
+  height: 2px;
+  background: var(--eva-fg);
+  animation: nhis-eva-dwell calc(var(--nhis-eva-timing-dwell-reveal-ms) * 1ms) linear forwards;
+}
+@keyframes nhis-eva-dwell {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+.nhis-eva-strip__link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: calc(var(--eva-ppd) * 0.1);
+}
+
+/* ---------- Consumable ---------- */
+.nhis-eva-consumable {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+}
+.nhis-eva-consumable.is-out-of-range {
+  outline: 2px solid var(--eva-fg);
+  outline-offset: 2px;
+}
+.nhis-eva-consumable.is-degraded {
+  outline: 2px dashed var(--eva-fg);
+  outline-offset: 2px;
+}
+
+/* ---------- Alerts ---------- */
+.nhis-eva-ring {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  border: calc(var(--eva-ppd) * 0.09) solid var(--eva-fg);
+}
+.nhis-eva-ring.is-emergency {
+  border-style: double;
+  border-width: calc(var(--eva-ppd) * 0.22);
+}
+.nhis-eva-alert {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: calc(var(--eva-ppd) * 0.12);
+}
+/* Red only as a filled shape behind white text (B22). Monochrome: outline box (B5). */
+.nhis-eva-alert__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(var(--eva-ppd) * 0.2);
+  padding: calc(var(--eva-ppd) * 0.1) calc(var(--eva-ppd) * 0.25);
+  background: var(--eva-alert-fill);
+  color: var(--eva-fg);
+  border: calc(var(--eva-ppd) * 0.06) solid var(--eva-fg);
+  border-radius: 2px;
+  --nhis-glyph-knockout: var(--eva-alert-fill);
+}
+.nhis-eva-visor.is-monochrome-green .nhis-eva-alert__chip {
+  --nhis-glyph-knockout: #000;
+}
+.nhis-eva-alert.is-emergency .nhis-eva-alert__chip {
+  outline: calc(var(--eva-ppd) * 0.06) solid var(--eva-fg);
+  outline-offset: calc(var(--eva-ppd) * 0.08);
+}
+.nhis-eva-alert__text {
+  display: flex;
+  flex-direction: column;
+}
+@media (prefers-reduced-motion: reduce) {
+  .nhis-eva-alert__chip.nhis-flash-nontext-high {
+    border-width: calc(var(--eva-ppd) * 0.14);
+  }
+}
+.nhis-eva-periph-alert {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--eva-ppd) * 0.2);
+}
+.nhis-eva-periph-alert.is-caution {
+  outline: 2px solid var(--eva-fg);
+  outline-offset: 2px;
+}
+.nhis-eva-invalid {
+  outline: 2px dashed var(--eva-fg);
+}
+
+/* ---------- Voice / response ---------- */
+.nhis-eva-voice,
+.nhis-eva-response {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--eva-ppd) * 0.2);
+}
+.nhis-eva-voice.is-not-understood,
+.nhis-eva-voice.is-unavailable,
+.nhis-eva-response.is-out-of-scope,
+.nhis-eva-response.is-ai-unavailable {
+  outline: 2px dashed var(--eva-fg);
+  outline-offset: 2px;
+}
+.nhis-eva-voice.is-read-back {
+  outline: 2px solid var(--eva-fg);
+  outline-offset: 2px;
+}
+
+/* ---------- Steps ---------- */
+.nhis-eva-steps ol {
+  list-style: none;
+  margin: calc(var(--eva-ppd) * 0.1) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--eva-ppd) * 0.08);
+}
+.nhis-eva-step {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--eva-ppd) * 0.2);
+  opacity: var(--nhis-eva-opacity-lowlight);
+}
+.nhis-eva-step.is-current {
+  opacity: 1;
+}
+
+/* ---------- Navigation ---------- */
+.nhis-eva-marker {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.nhis-eva-marker__stem {
+  width: 2px;
+  height: calc(var(--eva-ppd) * 0.8);
+  background: var(--eva-fg);
+}
+.nhis-eva-bearing {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--eva-ppd) * 0.2);
+}
+.nhis-eva-bearing.is-left {
+  flex-direction: row;
+}
+.nhis-eva-bearing.is-right {
+  flex-direction: row-reverse;
+}
+.nhis-eva-bearing__arrow {
+  width: 0;
+  height: 0;
+  border-top: calc(var(--eva-ppd) * 0.35) solid transparent;
+  border-bottom: calc(var(--eva-ppd) * 0.35) solid transparent;
+}
+.nhis-eva-bearing.is-left .nhis-eva-bearing__arrow {
+  border-right: calc(var(--eva-ppd) * 0.55) solid var(--eva-fg);
+}
+.nhis-eva-bearing.is-right .nhis-eva-bearing__arrow {
+  border-left: calc(var(--eva-ppd) * 0.55) solid var(--eva-fg);
+}
+
+/* ---------- Wrist control (simulated physical input) ---------- */
+.nhis-wrist {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--nhis-primitive-space-3);
+  padding: var(--nhis-primitive-space-2) var(--nhis-primitive-space-3);
+  border: 1px dashed var(--nhis-color-mode-simulation-stroke);
+  border-radius: var(--nhis-radius-panel);
+  background: var(--nhis-color-surface-panel);
+  color: var(--nhis-color-text-primary);
+}
+.nhis-wrist__title {
+  font: var(--nhis-type-label-font);
+  color: var(--nhis-color-text-secondary);
+}
+.nhis-wrist__btn,
+.nhis-wrist__dial-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--nhis-primitive-space-2);
+  min-height: var(--nhis-size-control-default);
+  min-width: var(--nhis-size-control-default);
+  padding: 0 var(--nhis-primitive-space-3);
+  border-radius: 999px;
+  border: 2px solid var(--nhis-color-border-strong);
+  background: var(--nhis-color-surface-raised);
+  color: var(--nhis-color-text-primary);
+  font: var(--nhis-type-action-font);
+  cursor: pointer;
+}
+.nhis-wrist__btn span {
+  font-weight: var(--nhis-primitive-font-weight-regular);
+  color: var(--nhis-color-text-secondary);
+}
+.nhis-wrist__dial {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--nhis-primitive-space-2);
+  font: var(--nhis-type-label-font);
+}

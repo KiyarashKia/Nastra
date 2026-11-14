@@ -1,0 +1,9 @@
+/* NHIS typefaces: Atkinson Hyperlegible Next + Mono (Braille Institute, SIL OFL 1.1), via Fontsource.
+   Imported separately so the consuming bundler emits real font files instead of inlining them. */
+@import '@fontsource/atkinson-hyperlegible-next/400.css';
+@import '@fontsource/atkinson-hyperlegible-next/500.css';
+@import '@fontsource/atkinson-hyperlegible-next/600.css';
+@import '@fontsource/atkinson-hyperlegible-next/700.css';
+@import '@fontsource/atkinson-hyperlegible-mono/400.css';
+@import '@fontsource/atkinson-hyperlegible-mono/500.css';
+@import '@fontsource/atkinson-hyperlegible-mono/700.css';

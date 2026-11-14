@@ -1,0 +1,225 @@
+/* ---------- Trend chart ---------- */
+.nhis-trend {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--nhis-primitive-space-2);
+  min-width: 0;
+}
+.nhis-trend__caption {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--nhis-primitive-space-2) var(--nhis-primitive-space-4);
+}
+.nhis-trend__title {
+  font: var(--nhis-type-title-font);
+  color: var(--nhis-color-text-primary);
+}
+.nhis-trend__legend {
+  display: inline-flex;
+  gap: var(--nhis-primitive-space-4);
+  font: var(--nhis-type-label-font);
+  font-weight: var(--nhis-primitive-font-weight-regular);
+  color: var(--nhis-color-text-secondary);
+}
+.nhis-trend__key {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.nhis-trend__key::before {
+  content: '';
+  display: inline-block;
+  width: 20px;
+  height: 0;
+  border-top: 3px solid var(--nhis-color-viz-live);
+}
+.nhis-trend__key--hist::before {
+  border-top: 1.5px solid var(--nhis-color-viz-historical);
+}
+.nhis-trend__key--band::before {
+  height: 10px;
+  border: 1px dotted var(--nhis-color-viz-baseline-edge);
+  background: var(--nhis-color-viz-baseline-band);
+}
+.nhis-trend__svg {
+  width: 100%;
+  max-width: 960px;
+  height: auto;
+  display: block;
+  font-family: var(--nhis-font-family-sans);
+}
+.nhis-trend__grid {
+  stroke: var(--nhis-color-viz-grid);
+  stroke-width: 1;
+}
+.nhis-trend__tick {
+  fill: var(--nhis-color-viz-axis);
+  font-size: var(--nhis-primitive-font-size-100);
+  font-family: var(--nhis-font-family-mono);
+}
+.nhis-trend__band {
+  fill: var(--nhis-color-viz-baseline-band);
+}
+.nhis-trend__band-edge {
+  stroke: var(--nhis-color-viz-baseline-edge);
+  stroke-width: 1;
+  stroke-dasharray: 2 3;
+}
+.nhis-trend__hatch-line {
+  stroke: var(--nhis-color-viz-gap);
+  stroke-width: 2;
+}
+.nhis-trend__gap {
+  stroke: var(--nhis-color-data-degraded-stroke);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+}
+.nhis-trend__annot {
+  fill: var(--nhis-color-text-secondary);
+  font-size: var(--nhis-primitive-font-size-100);
+}
+.nhis-trend__annot--strong {
+  fill: var(--nhis-color-text-primary);
+  font-weight: 600;
+}
+.nhis-trend__limit {
+  stroke-width: 1.5;
+  stroke-dasharray: 6 4;
+}
+.nhis-trend__limit--caution {
+  stroke: var(--nhis-color-viz-limit-caution);
+}
+.nhis-trend__limit--warning {
+  stroke: var(--nhis-color-viz-limit-warning);
+}
+.nhis-trend__line {
+  fill: none;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.nhis-trend__line--live {
+  stroke: var(--nhis-color-viz-live);
+  stroke-width: 2.5;
+}
+.nhis-trend__line--hist {
+  stroke: var(--nhis-color-viz-historical);
+  stroke-width: 1.5;
+}
+.nhis-trend__dot {
+  fill: var(--nhis-color-viz-live);
+}
+.nhis-trend__marker {
+  stroke: var(--nhis-color-surface-panel);
+  stroke-width: 1;
+}
+.nhis-trend__marker--caution {
+  fill: var(--nhis-color-status-caution-stroke);
+}
+.nhis-trend__marker--warning {
+  fill: var(--nhis-color-status-warning-stroke);
+}
+.nhis-trend__now {
+  stroke: var(--nhis-color-border-strong);
+  stroke-width: 1;
+}
+.nhis-trend__current-mark {
+  fill: var(--nhis-color-viz-live);
+}
+.nhis-trend__current-mark.is-degraded {
+  fill: none;
+  stroke: var(--nhis-color-data-degraded-stroke);
+  stroke-dasharray: 2 2;
+}
+.nhis-trend__current {
+  fill: var(--nhis-color-text-primary);
+  font-family: var(--nhis-font-family-mono);
+  font-size: var(--nhis-primitive-font-size-300);
+  font-weight: 500;
+}
+.nhis-trend__current-unit {
+  fill: var(--nhis-color-text-secondary);
+  font-size: var(--nhis-primitive-font-size-100);
+}
+.nhis-trend__fixture {
+  fill: var(--nhis-color-mode-simulation-stroke);
+  font-size: var(--nhis-primitive-font-size-100);
+  font-weight: 600;
+}
+.nhis-trend__table-wrap {
+  max-height: 240px;
+  overflow-y: auto;
+}
+.nhis-trend__table {
+  border-collapse: collapse;
+  font: var(--nhis-type-body-font);
+  width: 100%;
+  max-width: 560px;
+}
+.nhis-trend__table th,
+.nhis-trend__table td {
+  text-align: left;
+  padding: 4px 12px 4px 0;
+  border-bottom: 1px solid var(--nhis-color-border-subtle);
+}
+.nhis-trend__table th {
+  font: var(--nhis-type-label-font);
+  color: var(--nhis-color-text-secondary);
+}
+.nhis-trend__num {
+  text-align: right !important;
+}
+
+/* ---------- Sparkline ---------- */
+.nhis-sparkline {
+  display: block;
+  overflow: visible;
+}
+.nhis-sparkline__dot {
+  stroke: var(--nhis-color-viz-live);
+  stroke-width: 7;
+  stroke-linecap: round;
+}
+.nhis-sparkline__tail {
+  stroke: var(--nhis-color-data-degraded-stroke);
+  stroke-width: 1.5;
+  stroke-dasharray: 3 3;
+}
+
+/* ---------- Bullet ---------- */
+.nhis-bullet {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.nhis-bullet__head,
+.nhis-bullet__foot {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--nhis-primitive-space-2);
+}
+.nhis-bullet__label {
+  font: var(--nhis-type-label-font);
+}
+.nhis-bullet__value {
+  font: var(--nhis-type-tabular-font);
+  font-weight: 500;
+}
+.nhis-bullet__unit,
+.nhis-bullet__foot {
+  font: var(--nhis-type-label-font);
+  font-weight: var(--nhis-primitive-font-weight-regular);
+  color: var(--nhis-color-text-secondary);
+}
+.nhis-bullet__track {
+  fill: var(--nhis-color-surface-canvas);
+  stroke: var(--nhis-color-border-subtle);
+}
+.nhis-bullet__bar {
+  fill: var(--nhis-color-viz-live);
+}
+.nhis-bullet__target {
+  fill: var(--nhis-color-text-primary);
+}

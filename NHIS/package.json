@@ -1,0 +1,64 @@
+{
+  "name": "@nastra/nhis",
+  "version": "0.1.0",
+  "description": "NHIS — NASTRA Human Interface System. Tokens, semantics and React components for NASTRA Station, plus labelled EVA simulations.",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "sideEffects": [
+    "*.css"
+  ],
+  "main": "./dist/nhis.js",
+  "module": "./dist/nhis.js",
+  "types": "./dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/nhis.js"
+    },
+    "./styles.css": "./dist/nhis.css",
+    "./fonts.css": "./components/shared/fonts.css",
+    "./tokens.css": "./tokens/css/nhis-tokens.css",
+    "./tokens.json": "./tokens/source/tokens.json"
+  },
+  "files": [
+    "dist",
+    "components/shared/fonts.css",
+    "tokens",
+    "assets"
+  ],
+  "scripts": {
+    "tokens": "node scripts/build-tokens.mjs",
+    "check:contrast": "node scripts/check-contrast.mjs",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "build:lib": "vite build && tsc -p tsconfig.build.json",
+    "build": "npm run tokens && npm run check:contrast && npm run build:lib",
+    "test": "vitest run",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build -o storybook-static",
+    "verify": "npm run build && npm run typecheck && npm test && npm run build-storybook"
+  },
+  "peerDependencies": {
+    "react": "^18.3.0 || ^19.0.0",
+    "react-dom": "^18.3.0 || ^19.0.0"
+  },
+  "dependencies": {
+    "@fontsource/atkinson-hyperlegible-mono": "5.3.0",
+    "@fontsource/atkinson-hyperlegible-next": "5.3.0",
+    "react-aria-components": "1.22.1"
+  },
+  "devDependencies": {
+    "@storybook/addon-a11y": "10.6.7",
+    "@storybook/addon-docs": "10.6.7",
+    "@storybook/react-vite": "10.6.7",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.3.0",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "storybook": "10.6.7",
+    "typescript": "6.0.3",
+    "vite": "8.3.8",
+    "vitest": "5.1.0"
+  }
+}

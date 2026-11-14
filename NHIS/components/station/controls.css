@@ -485,3 +485,19 @@
   gap: var(--nhis-primitive-space-3);
   margin-top: var(--nhis-space-section);
 }
+
+/* Overlays render in a portal outside .nhis-root: carry the base type and colour with them. */
+.nhis-modal-overlay,
+.nhis-popover,
+.nhis-tooltip {
+  font: var(--nhis-type-body-font);
+  color: var(--nhis-color-text-primary);
+  -webkit-font-smoothing: antialiased;
+}
+.nhis-modal-overlay *,
+.nhis-modal-overlay *::before,
+.nhis-modal-overlay *::after,
+.nhis-popover *,
+.nhis-tooltip * {
+  box-sizing: border-box;
+}

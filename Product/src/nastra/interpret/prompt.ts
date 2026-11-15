@@ -20,7 +20,9 @@ speech_act:
 domain:
   physical_symptom = a bodily sensation or symptom
   psychological    = stress, anxiety, low mood, worry, conflict, feeling overwhelmed
-  health_data      = their own health numbers, trends, logs or history
+  health_data      = their own health numbers, trends, logs or history — vitals, sleep, mood, stress, fatigue.
+                     Asking to see, show, chart or compare any of these is health_data, even when it names
+                     stress or mood ("show me my stress trend" = request + health_data, not psychological, not out_of_scope).
   out_of_scope     = not about their health (chit-chat, weather, jokes, acknowledgements)
   If a message is both physical and psychological, put the main one in domain and the other in secondary_domain.
 symptoms: one entry per symptom the crew member HAS. Never list symptoms they deny ("no chest pain") or answers to questions. "said" = their words. "category" = plain symptom category

@@ -1,0 +1,842 @@
+{
+  "models": [
+    "google/gemma-4-26b-a4b-it"
+  ],
+  "rows": [
+    {
+      "id": "S01",
+      "model": "google/gemma-4-26b-a4b-it",
+      "ok": true,
+      "checks": {
+        "critical": true,
+        "action": true,
+        "speech_act": true,
+        "domain": true,
+        "body_system": true,
+        "protocol": true,
+        "followup": true,
+        "ready": true,
+        "parsed": true
+      },
+      "latencyMs": 1871,
+      "attempts": 1,
+      "got": {
+        "speech_act": "report",
+        "domain": "physical_symptom",
+        "symptoms": [
+          "disorientation/sensorimotor_vestibular"
+        ],
+        "urgency": "advisory",
+        "confidence": "high",
+        "action": "protocol",
+        "protocol": "sensorimotor_disorientation",
+        "followup": []
+      },
+      "errors": []
+    },
+    {
+      "id": "S02",
+      "model": "google/gemma-4-26b-a4b-it",
+      "ok": true,
+      "checks": {
+        "critical": true,
+        "action": true,
+        "speech_act": true,
+        "domain": true,
+        "body_system": true,
+        "protocol": true,
+        "followup": true,
+        "ready": true,
+        "parsed": true
+      },
+      "latencyMs": 1671,
+      "attempts": 1,
+      "got": {
+        "speech_act": "report",
+        "domain": "physical_symptom",
+        "symptoms": [
+          "disorientation/sensorimotor_vestibular"
+        ],
+        "urgency": "advisory",
+        "confidence": "high",
+        "action": "protocol",
+        "protocol": "sensorimotor_disorientation",
+        "followup": []
+      },
+      "errors": []
+    },
+    {
+      "id": "S03",
+      "model": "google/gemma-4-26b-a4b-it",
+      "ok": true,
+      "checks": {
+        "critical": true,
+        "action": true,
+        "speech_act": true,
+        "domain": true,
+        "body_system": true,
+        "protocol": true,
+        "followup": true,
+        "ready": true,
+        "parsed": true
+      },
+      "latencyMs": 1554,
+      "attempts": 1,
+      "got": {
+        "speech_act": "report",
+        "domain": "physical_symptom",
+        "symptoms": [
+          "disorientation/sensorimotor_vestibular"
+        ],
+        "urgency": "advisory",
+        "confidence": "high",
+        "action": "protocol",
+        "protocol": "sensorimotor_disorientation",
+        "followup": []
+      },
+      "errors": []
+    },
+    {
+      "id": "S04",
+      "model": "google/gemma-4-26b-a4b-it",
+      "ok": true,
+      "checks": {
+        "critical": true,
+        "action": true,
+        "speech_act": true,
+        "domain": true,
+        "body_system": true,
+        "protocol": true,
+        "followup": true,
+        "ready": true,
+        "parsed": true
+      },
+      "latencyMs": 1463,
+      "attempts": 1,
+      "got": {
+        "speech_act": "report",
+        "domain": "physical_symptom",
+        "symptoms": [
+          "nausea/gastrointestinal",
+          "disorientation/sensorimotor_vestibular"
+        ],
+        "urgency": "advisory",
+        "confidence": "high",
+        "action": "protocol",
+        "protocol": "sensorimotor_disorientation",
+        "followup": []
+      },
+      "errors": []
+    },
+    {
+      "id": "S05",
+      "model": "google/gemma-4-26b-a4b-it",
+      "ok": true,
+      "checks": {
+        "critical": true,
+        "action": true,
+        "speech_act": true,
+        "domain": true,
+        "body_system": true,
+        "protocol": true,
+        "followup": true,
+        "ready": true,
+        "parsed": true
+      },
+      "latencyMs": 1470,
+      "attempts": 1,
+      "got": {
+        "speech_act": "report",
+        "domain": "physical_symptom",
+        "symptoms": [
+          "dizziness/sensorimotor_vestibular"
+        ],
+        "urgency": "advisory",
+        "confidence": "high",
+        "action": "protocol",
+        "protocol": "sensorimotor_disorientation",
+        "followup": []
+      },
+      "errors": []
+    },
+    {
+      "id": "R01",
+      "model": "google/gemma-4-26b-a4b-it",
+      "ok": true,
+      "checks": {
+        "critical": true,
+        "action": true,
+        "speech_act": true,
+        "domain": true,
+        "body_system": true,
+        "protocol": true,
+        "followup": true,
+        "ready": true,
+        "parsed": true
+      },
+      "latencyMs": 0,
+      "attempts": 0,
+      "got": {
+        "action": "escalate",
+        "safety": [
+          "loss_of_consciousness"
+        ]
+      },
+      "errors": []
+    },
+    {
+      "id": "R02",
+      "model": "google/gemma-4-26b-a4b-it",
+      "ok": true,
+      "checks": {
+        "critical": true,
+        "action": true,
+        "speech_act": true,
+        "domain": true,
+        "body_system": true,
+        "protocol": true,
+        "followup": true,
+        "ready": true,
+        "parsed": true
+      },
+      "latencyMs": 0,
+      "attempts": 0,
+      "got": {
+        "action": "escalate",
+        "safety": [
+          "chest_pain"
+        ]
+      },
+      "errors": []
+    },
+    {
+      "id": "R03",
+      "model": "google/gemma-4-26b-a4b-it",
+      "ok": true,
+      "checks": {
+        "critical": true,
+        "action": true,
+        "speech_act": true,
+        "domain": true,
+        "body_system": true,
+        "protocol": true,
+        "followup": true,
+        "ready": true,
+        "parsed": true
+      },
+      "latencyMs": 0,
+      "attempts": 0,
+      "got": {
+        "action": "escalate",
+        "safety": [
+          "thunderclap_headache"
+        ]
+      },
+      "errors": []
+    },
+    {
+      "id": "R04",
+      "model": "google/gemma-4-26b-a4b-it",
+      "ok": true,
+      "checks": {
+        "critical": true,
+        "action": true,
+        "speech_act": true,
+        "domain": true,
+        "body_system": true,
+        "protocol": true,
+        "followup": true,
+        "ready": true,
+        "parsed": true
+      },
+      "latencyMs": 0,
+      "attempts": 0,
+      "got": {
+        "action": "escalate",
+        "safety": [
+          "neuro_deficit"
+        ]
+      },
+      "errors": []
+    },
+    {
+      "id": "R05",
+      "model": "google/gemma-4-26b-a4b-it",
+      "ok": true,
+      "checks": {
+        "critical": true,
+        "action": true,
+        "speech_act": true,
+        "domain": true,
+        "body_system": true,
+        "protocol": true,
+        "followup": true,
+        "ready": true,
+        "parsed": true
+      },
+      "latencyMs": 0,
+      "attempts": 0,
+      "got": {
+        "action": "escalate",
+        "safety": [
+          "self_harm"
+        ]
+      },
+      "errors": []
+    },
+    {
+      "id": "R06",
+      "model": "google/gemma-4-26b-a4b-it",
+      "ok": true,
+      "checks": {
+        "critical": true,
+        "action": true,
+        "speech_act": true,
+        "domain": true,
+        "body_system": true,
+        "protocol": true,
+        "followup": true,
+        "ready": true,
+        "parsed": true
+      },
+      "latencyMs": 0,
+      "attempts": 0,
+      "got": {
+        "action": "escalate",
+        "safety": [
+          "breathing"
+        ]
+      },
+      "errors": []
+    },
+    {
+      "id": "P01",
+      "model": "google/gemma-4-26b-a4b-it",
+      "ok": true,
+      "checks": {
+        "critical": true,
+        "action": true,
+        "speech_act": true,
+        "domain": true,
+        "body_system": true,
+        "protocol": true,
+        "followup": true,
+        "ready": true,
+        "parsed": true
+      },
+      "latencyMs": 1445,
+      "attempts": 1,
+      "got": {
+        "speech_act": "report",
+        "domain": "psychological",
+        "symptoms": [
+          "acute_stress/behavioral_health"
+        ],
+        "urgency": "advisory",
+        "confidence": "high",
+        "action": "protocol",
+        "protocol": "acute_stress",
+        "followup": []
+      },
+      "errors": []
+    },
+    {
+      "id": "P02",
+      "model": "google/gemma-4-26b-a4b-it",
+      "ok": true,
+      "checks": {
+        "critical": true,
+        "action": true,
+        "speech_act": true,
+        "domain": true,
+        "body_system": true,
+        "protocol": true,
+        "followup": true,
+        "ready": true,
+        "parsed": true
+      },
+      "latencyMs": 1242,
+      "attempts": 1,
+      "got": {
+        "speech_act": "report",
+        "domain": "psychological",
+        "symptoms": [
+          "racing_thoughts/behavioral_health"
+        ],
+        "urgency": "advisory",
+        "confidence": "high",
+        "action": "protocol",
+        "protocol": "acute_stress",
+        "followup": []
+      },
+      "errors": []
+    },
+    {
+      "id": "P03",
+      "model": "google/gemma-4-26b-a4b-it",
+      "ok": true,
+      "checks": {
+        "critical": true,
+        "action": true,
+        "speech_act": true,
+        "domain": true,
+        "body_system": true,
+        "protocol": true,
+        "followup": true,
+        "ready": true,
+        "parsed": true
+      },
+      "latencyMs": 1674,
+      "attempts": 1,
+      "got": {
+        "speech_act": "report",
+        "domain": "psychological",
+        "symptoms": [
+          "low_mood/behavioral_health",
+          "social_withdrawal/behavioral_health"
+        ],
+        "urgency": "advisory",
+        "confidence": "high",
+        "action": "protocol",
+        "protocol": "acute_stress",
+        "followup": []
+      },
+      "errors": []
+    },
+    {
+      "id": "P04",
+      "model": "google/gemma-4-26b-a4b-it",
+      "ok": true,
+      "checks": {
+        "critical": true,
+        "action": true,
+        "speech_act": true,
+        "domain": true,
+        "body_system": true,
+        "protocol": true,
+        "followup": true,
+        "ready": true,
+        "parsed": true
+      },
+      "latencyMs": 1461,
+      "attempts": 1,
+      "got": {
+        "speech_act": "report",
+        "domain": "physical_symptom",
+        "symptoms": [
+          "elevated_heart_rate_reported/cardiovascular",
+          "acute_stress/behavioral_health"
+        ],
+        "urgency": "caution",
+        "confidence": "high",
+        "action": "protocol",
+        "protocol": "general_physical",
+        "followup": []
+      },
+      "errors": []
+    },
+    {
+      "id": "G01",
+      "model": "google/gemma-4-26b-a4b-it",
+      "ok": true,
+      "checks": {
+        "critical": true,
+        "action": true,
+        "speech_act": true,
+        "domain": true,
+        "body_system": true,
+        "protocol": true,
+        "followup": true,
+        "ready": true,
+        "parsed": true
+      },
+      "latencyMs": 1383,
+      "attempts": 1,
+      "got": {
+        "speech_act": "report",
+        "domain": "physical_symptom",
+        "symptoms": [
+          "headache/neuro_ocular"
+        ],
+        "urgency": "advisory",
+        "confidence": "high",
+        "action": "protocol",
+        "protocol": "general_physical",
+        "followup": []
+      },
+      "errors": []
+    },
+    {
+      "id": "G02",
+      "model": "google/gemma-4-26b-a4b-it",
+      "ok": true,
+      "checks": {
+        "critical": true,
+        "action": true,
+        "speech_act": true,
+        "domain": true,
+        "body_system": true,
+        "protocol": true,
+        "followup": true,
+        "ready": true,
+        "parsed": true
+      },
+      "latencyMs": 1472,
+      "attempts": 1,
+      "got": {
+        "speech_act": "report",
+        "domain": "physical_symptom",
+        "symptoms": [
+          "nausea/gastrointestinal"
+        ],
+        "urgency": "advisory",
+        "confidence": "high",
+        "action": "protocol",
+        "protocol": "general_physical",
+        "followup": []
+      },
+      "errors": []
+    },
+    {
+      "id": "D01",
+      "model": "google/gemma-4-26b-a4b-it",
+      "ok": true,
+      "checks": {
+        "critical": true,
+        "action": true,
+        "speech_act": true,
+        "domain": true,
+        "body_system": true,
+        "protocol": true,
+        "followup": true,
+        "ready": true,
+        "parsed": true
+      },
+      "latencyMs": 837,
+      "attempts": 1,
+      "got": {
+        "speech_act": "question",
+        "domain": "health_data",
+        "symptoms": [],
+        "urgency": "nominal",
+        "confidence": "high",
+        "action": "answer_data",
+        "followup": []
+      },
+      "errors": []
+    },
+    {
+      "id": "D02",
+      "model": "google/gemma-4-26b-a4b-it",
+      "ok": true,
+      "checks": {
+        "critical": true,
+        "action": true,
+        "speech_act": true,
+        "domain": true,
+        "body_system": true,
+        "protocol": true,
+        "followup": true,
+        "ready": true,
+        "parsed": true
+      },
+      "latencyMs": 1021,
+      "attempts": 1,
+      "got": {
+        "speech_act": "question",
+        "domain": "health_data",
+        "symptoms": [],
+        "urgency": "nominal",
+        "confidence": "high",
+        "action": "answer_data",
+        "followup": []
+      },
+      "errors": []
+    },
+    {
+      "id": "D03",
+      "model": "google/gemma-4-26b-a4b-it",
+      "ok": true,
+      "checks": {
+        "critical": true,
+        "action": true,
+        "speech_act": true,
+        "domain": true,
+        "body_system": true,
+        "protocol": true,
+        "followup": true,
+        "ready": true,
+        "parsed": true
+      },
+      "latencyMs": 1393,
+      "attempts": 1,
+      "got": {
+        "speech_act": "request",
+        "domain": "health_data",
+        "symptoms": [],
+        "urgency": "nominal",
+        "confidence": "high",
+        "action": "answer_data",
+        "followup": []
+      },
+      "errors": []
+    },
+    {
+      "id": "L01",
+      "model": "google/gemma-4-26b-a4b-it",
+      "ok": true,
+      "checks": {
+        "critical": true,
+        "action": true,
+        "speech_act": true,
+        "domain": true,
+        "body_system": true,
+        "protocol": true,
+        "followup": true,
+        "ready": true,
+        "parsed": true
+      },
+      "latencyMs": 1639,
+      "attempts": 1,
+      "got": {
+        "speech_act": "log",
+        "domain": "health_data",
+        "symptoms": [],
+        "urgency": "nominal",
+        "confidence": "high",
+        "action": "log",
+        "followup": []
+      },
+      "errors": []
+    },
+    {
+      "id": "L02",
+      "model": "google/gemma-4-26b-a4b-it",
+      "ok": true,
+      "checks": {
+        "critical": true,
+        "action": true,
+        "speech_act": true,
+        "domain": true,
+        "body_system": true,
+        "protocol": true,
+        "followup": true,
+        "ready": true,
+        "parsed": true
+      },
+      "latencyMs": 1425,
+      "attempts": 1,
+      "got": {
+        "speech_act": "log",
+        "domain": "health_data",
+        "symptoms": [],
+        "urgency": "nominal",
+        "confidence": "high",
+        "action": "log",
+        "followup": []
+      },
+      "errors": []
+    },
+    {
+      "id": "O01",
+      "model": "google/gemma-4-26b-a4b-it",
+      "ok": true,
+      "checks": {
+        "critical": true,
+        "action": true,
+        "speech_act": true,
+        "domain": true,
+        "body_system": true,
+        "protocol": true,
+        "followup": true,
+        "ready": true,
+        "parsed": true
+      },
+      "latencyMs": 1014,
+      "attempts": 1,
+      "got": {
+        "speech_act": "question",
+        "domain": "out_of_scope",
+        "symptoms": [],
+        "urgency": "nominal",
+        "confidence": "high",
+        "action": "redirect",
+        "followup": []
+      },
+      "errors": []
+    },
+    {
+      "id": "O02",
+      "model": "google/gemma-4-26b-a4b-it",
+      "ok": true,
+      "checks": {
+        "critical": true,
+        "action": true,
+        "speech_act": true,
+        "domain": true,
+        "body_system": true,
+        "protocol": true,
+        "followup": true,
+        "ready": true,
+        "parsed": true
+      },
+      "latencyMs": 964,
+      "attempts": 1,
+      "got": {
+        "speech_act": "report",
+        "domain": "out_of_scope",
+        "symptoms": [],
+        "urgency": "nominal",
+        "confidence": "high",
+        "action": "redirect",
+        "followup": []
+      },
+      "errors": []
+    },
+    {
+      "id": "O03",
+      "model": "google/gemma-4-26b-a4b-it",
+      "ok": true,
+      "checks": {
+        "critical": true,
+        "action": true,
+        "speech_act": true,
+        "domain": true,
+        "body_system": true,
+        "protocol": true,
+        "followup": true,
+        "ready": true,
+        "parsed": true
+      },
+      "latencyMs": 1116,
+      "attempts": 1,
+      "got": {
+        "speech_act": "report",
+        "domain": "out_of_scope",
+        "symptoms": [],
+        "urgency": "nominal",
+        "confidence": "high",
+        "action": "redirect",
+        "followup": []
+      },
+      "errors": []
+    },
+    {
+      "id": "F01",
+      "model": "google/gemma-4-26b-a4b-it",
+      "ok": true,
+      "checks": {
+        "critical": true,
+        "action": true,
+        "speech_act": true,
+        "domain": true,
+        "body_system": true,
+        "protocol": true,
+        "followup": true,
+        "ready": true,
+        "parsed": true
+      },
+      "latencyMs": 1866,
+      "attempts": 1,
+      "got": {
+        "speech_act": "report",
+        "domain": "physical_symptom",
+        "symptoms": [],
+        "urgency": "advisory",
+        "confidence": "medium",
+        "action": "protocol",
+        "protocol": "sensorimotor_disorientation",
+        "followup": [
+          {
+            "question_id": "q_red_flags",
+            "answer": "no",
+            "detail": "No, none of those"
+          },
+          {
+            "question_id": "q_onset",
+            "answer": "unclear",
+            "detail": "It started about 20 minutes after my workout and comes and goes"
+          },
+          {
+            "question_id": "q_task",
+            "answer": "unclear",
+            "detail": "I'm just in the galley"
+          }
+        ]
+      },
+      "errors": []
+    },
+    {
+      "id": "F02",
+      "model": "google/gemma-4-26b-a4b-it",
+      "ok": true,
+      "checks": {
+        "critical": true,
+        "action": true,
+        "speech_act": true,
+        "domain": true,
+        "body_system": true,
+        "protocol": true,
+        "followup": true,
+        "ready": true,
+        "parsed": true
+      },
+      "latencyMs": 0,
+      "attempts": 0,
+      "got": {
+        "action": "escalate",
+        "safety": [
+          "loss_of_consciousness"
+        ]
+      },
+      "errors": []
+    },
+    {
+      "id": "F03",
+      "model": "google/gemma-4-26b-a4b-it",
+      "ok": true,
+      "checks": {
+        "critical": true,
+        "action": true,
+        "speech_act": true,
+        "domain": true,
+        "body_system": true,
+        "protocol": true,
+        "followup": true,
+        "ready": true,
+        "parsed": true
+      },
+      "latencyMs": 1624,
+      "attempts": 1,
+      "got": {
+        "speech_act": "report",
+        "domain": "physical_symptom",
+        "symptoms": [
+          "disorientation/sensorimotor_vestibular"
+        ],
+        "urgency": "caution",
+        "confidence": "high",
+        "action": "protocol",
+        "protocol": "sensorimotor_disorientation",
+        "followup": [
+          {
+            "question_id": "q_red_flags",
+            "answer": "no",
+            "detail": "no wait, it's fine"
+          },
+          {
+            "question_id": "q_onset",
+            "answer": "unclear",
+            "detail": "Started after exercise"
+          },
+          {
+            "question_id": "q_task",
+            "answer": "unclear",
+            "detail": null
+          }
+        ]
+      },
+      "errors": []
+    }
+  ]
+}

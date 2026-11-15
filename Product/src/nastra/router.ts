@@ -10,6 +10,12 @@ export type Action =
   | {
       kind: 'protocol';
       protocolId: string;
+      /**
+       * intake   → ask what's missing (warning-signs check first, at most 2 questions)
+       * readback → everything known but something was unclear: confirm before assessing
+       * assess   → pull data, explain, guide
+       */
+      stage: 'intake' | 'readback' | 'assess';
       askNow: FollowUpQuestion[];
       showImmediateStep: boolean;
       readyForGuidance: boolean;
@@ -24,7 +30,8 @@ export type EscalationTrigger =
   | { kind: 'red_flag_answer'; questionId: string; questionText: string }
   | { kind: 'unanswered_check'; prompts: number }
   | { kind: 'unclear_message' }
-  | { kind: 'model_flag' };
+  | { kind: 'model_flag' }
+  | { kind: 'crew_request'; target: 'flight_surgeon' | 'crew_medical_officer'; note?: string };
 
 export interface EventState {
   protocolId: string | null;
@@ -36,7 +43,20 @@ export interface EventState {
   urgency?: Urgency;
   /** How many times the warning-signs question has been shown without a clear answer. */
   redFlagPrompts?: number;
+  /** Where the event is in the protocol flow. */
+  phase?: 'intake' | 'readback' | 'assessed';
+  /** 'unclear' once any free-text turn was understood with less than high confidence. */
+  clarity?: 'clear' | 'unclear';
+  /** Values collected so far, in plain words (onset, severity, trigger…). Shown in the read-back. */
+  values?: Record<string, string>;
 }
+
+/** Signals from the UI that are not free text: a confirmed read-back. */
+export interface RouteSignals {
+  confirm?: boolean;
+}
+
+const MAX_QUESTIONS_PER_TURN = 2;
 
 /** The warning-signs question can go unanswered this many times before code escalates. */
 export const MAX_UNANSWERED_RED_FLAG_PROMPTS = 2;
@@ -49,7 +69,7 @@ export interface RouteResult {
   trace: string[];
 }
 
-export function route(screen: SafetyScreen, interp: Interpretation, state?: EventState): RouteResult {
+export function route(screen: SafetyScreen, interp: Interpretation, state?: EventState, signals: RouteSignals = {}): RouteResult {
   const trace: string[] = [];
 
   // 1. Deterministic red flags in the text. Nothing overrides this.
@@ -111,7 +131,7 @@ export function route(screen: SafetyScreen, interp: Interpretation, state?: Even
 
   // 4. Continue an open protocol event.
   if (protocolFromState && state) {
-    return continueProtocol(protocolFromState, interp, state, trace);
+    return continueProtocol(protocolFromState, interp, state, trace, signals);
   }
 
   // 5. Not sure what this is → ask, don't guess.
@@ -141,21 +161,17 @@ export function route(screen: SafetyScreen, interp: Interpretation, state?: Even
     return { action: { kind: 'clarify', reason: 'No matching protocol' }, urgency: maxUrgency(interp.urgency_hint), protocol: null, trace };
   }
   trace.push(`protocol: ${protocol.id} v${protocol.version}`);
+  const first = continueProtocol(protocol, interp, { protocolId: protocol.id, asked: [], knownInfo: [], turn: 0 }, trace, {});
   return {
-    action: {
-      kind: 'protocol',
-      protocolId: protocol.id,
-      askNow: protocol.mandatoryQuestions,
-      showImmediateStep: protocol.immediateStep !== null,
-      readyForGuidance: false,
-    },
+    ...first,
+    action: first.action.kind === 'protocol'
+      ? { ...first.action, showImmediateStep: protocol.immediateStep !== null }
+      : first.action,
     urgency: maxUrgency(protocol.baseUrgency, interp.urgency_hint),
-    protocol,
-    trace,
   };
 }
 
-function continueProtocol(protocol: Protocol, interp: Interpretation, state: EventState, trace: string[]): RouteResult {
+function continueProtocol(protocol: Protocol, interp: Interpretation, state: EventState, trace: string[], signals: RouteSignals): RouteResult {
   const answered = new Map(state.asked.map((a) => [a.id, a.answer]));
   for (const a of interp.followup_answers) answered.set(a.question_id, a.answer);
 
@@ -169,19 +185,34 @@ function continueProtocol(protocol: Protocol, interp: Interpretation, state: Eve
   if (interp.severity) known.add('severity');
   if (interp.activity_context) known.add('current_activity');
 
-  // Red-flag questions must be answered clearly before anything else.
-  const askNow = protocol.mandatoryQuestions.filter((q) => {
+  const redFlagQs = protocol.mandatoryQuestions.filter((q) => q.redFlag);
+  const redFlagsCleared = redFlagQs.every((q) => answered.get(q.id) === 'no');
+  // Progressive questioning: the warning-signs check first, then what's missing. Never more than two at once.
+  const missingQs = protocol.mandatoryQuestions.filter((q) => {
+    if (q.redFlag) return false;
     const ans = answered.get(q.id);
-    if (q.redFlag) return ans === undefined || ans === null || ans === 'unclear';
-    return !(q.fills ?? []).every((f) => known.has(f)) && (ans === undefined || ans === null);
+    const fills = q.fills ?? [];
+    return fills.length > 0 && !fills.every((f) => known.has(f)) && (ans === undefined || ans === null || ans === 'unclear');
   });
-  const missingRequired = protocol.requiredInfo.filter((r) => !known.has(r));
-  const redFlagsCleared = protocol.mandatoryQuestions.filter((q) => q.redFlag).every((q) => answered.get(q.id) === 'no');
-  const ready = redFlagsCleared && missingRequired.length === 0;
+  const askNow = [
+    ...(redFlagsCleared ? [] : redFlagQs.filter((q) => answered.get(q.id) !== 'no')),
+    ...missingQs,
+  ].slice(0, MAX_QUESTIONS_PER_TURN);
 
-  trace.push(`protocol: ${protocol.id} turn ${state.turn + 1}; red flags cleared: ${redFlagsCleared}; missing: ${missingRequired.join(', ') || 'none'}`);
+  const missingRequired = protocol.requiredInfo.filter((r) => !known.has(r));
+  const complete = redFlagsCleared && missingRequired.length === 0;
+  const unclear = state.clarity === 'unclear' || interp.confidence !== 'high';
+
+  let stage: 'intake' | 'readback' | 'assess';
+  if (!complete) stage = 'intake';
+  else if (state.phase === 'assessed') stage = 'assess';
+  else if (state.phase === 'readback' && signals.confirm) stage = 'assess';
+  else if (unclear) stage = 'readback';
+  else stage = 'assess';
+
+  trace.push(`protocol: ${protocol.id} turn ${state.turn + 1}; red flags cleared: ${redFlagsCleared}; missing: ${missingRequired.join(', ') || 'none'}; clarity: ${unclear ? 'unclear' : 'clear'}; stage: ${stage}`);
   return {
-    action: { kind: 'protocol', protocolId: protocol.id, askNow, showImmediateStep: false, readyForGuidance: ready },
+    action: { kind: 'protocol', protocolId: protocol.id, stage, askNow: stage === 'intake' ? askNow : [], showImmediateStep: false, readyForGuidance: stage === 'assess' },
     urgency: maxUrgency(state.urgency, protocol.baseUrgency, interp.urgency_hint),
     protocol,
     trace,

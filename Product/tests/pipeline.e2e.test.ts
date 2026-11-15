@@ -48,63 +48,90 @@ beforeAll(async () => {
 describe('pipeline — "I feel the room is tilting" (crew_02)', () => {
   let eventId: string;
 
-  it('turn 1: protocol, immediate step, 3 questions, evidence with the planted story', async () => {
+  it('turn 1: intake — immediate step, warning-signs + onset chips, no data pulled, no model text', async () => {
     const db = createPgliteDb(pg);
     const llm = fakeLlm([interp({
       symptoms: [{ said: 'room is tilting', category: 'disorientation', body_system: 'sensorimotor_vestibular' }],
-      missing_info: ['onset', 'duration', 'associated_symptoms', 'current_activity'],
+      missing_info: ['onset', 'severity'],
     })]);
     const r = await handleMessage({ crewId: 'crew_02', text: 'I feel the room is tilting' }, { db, llm, model: 'fake', asOf: ANCHOR });
 
     expect(r.action).toBe('protocol');
-    expect(r.protocol?.id).toBe('sensorimotor_disorientation');
+    expect(r.stage).toBe('intake');
+    expect(r.protocol).toMatchObject({ id: 'sensorimotor_disorientation', code: 'PRT-SM-01' });
     expect(r.urgency).toBe('advisory');
     expect(r.immediateStep).toMatch(/hold on to a handrail/);
-    expect(r.questions.map((q) => q.id)).toEqual(['q_red_flags', 'q_onset', 'q_task']);
-    expect(r.explanationSource).toBe('model');
-
-    const text = r.evidence.map((e) => `${e.title}: ${e.detail}`).join('\n');
-    expect(text).toMatch(/30 min after exercise/);
-    expect(text).toMatch(/Heart rate \d+(\.\d)? bpm vs your usual [\d.]+ \(higher than usual for you\)/);
-    expect(text).toMatch(/4\.9 h, 5\.4 h, 5\.1 h/);
-    expect(text).toMatch(/stress 4\/5/);
-    expect(text).toMatch(/2 similar episodes before; both came after exercise, after a night well below your usual sleep and on a high-stress morning/);
-    expect(text).toMatch(/EVA prep/);
-    expect(r.evidence.some((e) => e.source.url?.includes('nasa.gov/reference/risk-of-altered-sensorimotor'))).toBe(true);
-
-    expect(r.eventId).toBeTruthy();
+    expect(r.questions.map((q) => q.id)).toEqual(['q_red_flags', 'q_onset']);
+    expect(r.questions[0].options.map((o) => o.id)).toContain('none');
+    expect(r.explanation).toMatch(/new symptom report: room is tilting\. 2 questions before I look at your data/);
+    expect(r.explanationSource).toBe('template');
+    expect(r.evidence).toEqual([]);
+    expect(llm.calls).toHaveLength(1); // interpretation only, no explanation call
     eventId = r.eventId!;
-    const ev = (await pg.query<{ status: string; protocol_id: string; mission_context: string }>('select status, protocol_id, mission_context from health_events where id = $1', [eventId])).rows[0];
-    expect(ev).toMatchObject({ status: 'awaiting_followup', protocol_id: 'sensorimotor_disorientation', mission_context: 'post_exercise' });
-    const tools = (await pg.query<{ tool: string }>('select tool from tool_calls where event_id = $1', [eventId])).rows.map((x) => x.tool);
-    expect(tools).toEqual(expect.arrayContaining(['telemetry.vitals_now', 'health.recent_sleep', 'health.recent_mood', 'mission.current_context', 'health.similar_episodes', 'knowledge.search']));
+    const ev = (await pg.query<{ status: string; protocol_id: string }>('select status, protocol_id from health_events where id = $1', [eventId])).rows[0];
+    expect(ev).toMatchObject({ status: 'awaiting_followup', protocol_id: 'sensorimotor_disorientation' });
   });
 
-  it('turn 2: red flags cleared + onset + activity → guidance and a recheck', async () => {
+  it('turn 2: chips answer in code (no model) → one question left', async () => {
     const db = createPgliteDb(pg);
-    const llm = fakeLlm([interp({
-      followup_answers: [
-        { question_id: 'q_red_flags', answer: 'no', detail: null },
-        { question_id: 'q_onset', answer: 'yes', detail: 'about 20 min after workout, comes and goes' },
-        { question_id: 'q_task', answer: 'no', detail: 'in the galley' },
-      ],
-      onset: '20 minutes after workout', activity_context: 'in the galley',
-    })]);
+    const llm = fakeLlm([]);
     const r = await handleMessage(
-      { crewId: 'crew_02', eventId, text: "No, none of those. Started about 20 minutes after my workout, comes and goes. I'm in the galley." },
-      { db, llm, model: 'fake', asOf: '2026-11-15T00:32:00.000Z' },
+      { crewId: 'crew_02', eventId, text: 'None of these · Within the last hour', answers: { q_red_flags: 'none', q_onset: 'last_hour' } },
+      { db, llm, model: 'fake', asOf: '2026-11-15T00:31:00.000Z' },
     );
-    expect(r.action).toBe('protocol');
-    expect(r.eventId).toBe(eventId);
-    expect(r.questions).toEqual([]);
-    expect(r.immediateStep).toBeUndefined();
+    expect(llm.calls).toHaveLength(0);
+    expect(r.stage).toBe('intake');
+    expect(r.questions.map((q) => q.id)).toEqual(['q_severity']);
+    expect(r.explanation).toBe('Thanks. One more question.');
+  });
+
+  it('turn 3: clear report → assess straight away (no read-back), real progress, planted story in the evidence', async () => {
+    const db = createPgliteDb(pg);
+    const llm = fakeLlm([]);
+    const progress: string[] = [];
+    const r = await handleMessage(
+      { crewId: 'crew_02', eventId, text: 'Moderate', answers: { q_severity: 'moderate' } },
+      { db, llm, model: 'fake', asOf: '2026-11-15T00:32:00.000Z', onProgress: (p) => progress.push(`${p.step}/${p.of} ${p.state} ${p.label}`) },
+    );
+    expect(r.stage).toBe('assess');
+    expect(r.explanationSource).toBe('model');
+    expect(progress.filter((p) => p.includes(' done '))).toHaveLength(6);
+    expect(progress[0]).toBe('1/6 running Checking current telemetry');
+
+    const text = r.evidence.map((e) => `${e.title}: ${e.detail}`).join('\n');
+    expect(text).toMatch(/32 min after exercise/);
+    expect(text).toMatch(/Heart rate \d+(\.\d)? bpm vs your usual [\d.]+ \(higher than usual for you\)/);
+    expect(text).toMatch(/4\.9 h, 5\.4 h, 5\.1 h/);
+    expect(text).toMatch(/2 similar episodes before; both came after exercise, after a night well below your usual sleep and on a high-stress morning/);
+
+    const as = r.assessment!;
+    expect(as.recommendedAction.protocol).toEqual({ id: 'PRT-SM-01', title: 'Disorientation / balance disturbance' });
+    expect(as.pattern?.statement).toMatch(/2 similar episodes before/);
+    expect(as.observations.some((o) => o.origin === 'self-reported')).toBe(true);
+    expect(as.evidence.baseline).toMatch(/not a clinical threshold/);
     expect(r.steps.join(' ')).toMatch(/avoid quick head movements/);
     expect(r.recheckMinutes).toBe(20);
-    // The model only saw the open questions it was allowed to answer.
-    expect(String(llm.calls[0].messages.at(-1)?.content)).toContain('q_red_flags');
 
+    const tools = (await pg.query<{ tool: string }>('select tool from tool_calls where event_id = $1', [eventId])).rows.map((x) => x.tool);
+    expect(tools).toEqual(expect.arrayContaining(['telemetry.vitals_now', 'health.recent_sleep', 'health.recent_mood', 'mission.current_context', 'health.similar_episodes', 'knowledge.search']));
     const turns = (await pg.query('select count(*)::int n from event_turns where event_id = $1', [eventId])).rows[0] as { n: number };
-    expect(turns.n).toBe(4);
+    expect(turns.n).toBe(6);
+  });
+
+  it('unclear report → read-back before assessing; Confirm → assess', async () => {
+    const db = createPgliteDb(pg);
+    const t1 = await handleMessage({ crewId: 'crew_01', text: 'kinda off balance maybe since earlier, its mild i guess' }, {
+      db, model: 'fake', asOf: ANCHOR,
+      llm: fakeLlm([interp({ symptoms: [{ said: 'off balance', category: 'disorientation', body_system: 'sensorimotor_vestibular' }], onset: 'earlier', severity: 'mild', confidence: 'medium' })]),
+    });
+    expect(t1.questions.map((q) => q.id)).toEqual(['q_red_flags']);
+    const t2 = await handleMessage({ crewId: 'crew_01', eventId: t1.eventId!, text: 'None of these', answers: { q_red_flags: 'none' } }, { db, model: 'fake', asOf: ANCHOR, llm: fakeLlm([]) });
+    expect(t2.stage).toBe('readback');
+    expect(t2.readback!.summary).toMatch(/^Kinda off balance maybe since earlier, its mild i guess, started earlier/);
+    expect(t2.readback!.summary).toMatch(/Mild intensity\. No warning signs reported\./);
+    const t3 = await handleMessage({ crewId: 'crew_01', eventId: t1.eventId!, text: 'Confirm & assess', confirm: true }, { db, model: 'fake', asOf: ANCHOR, llm: fakeLlm([]) });
+    expect(t3.stage).toBe('assess');
+    expect(t3.assessment!.confidence.level).not.toBe('high'); // the read-back was needed
   });
 
   it('closing the event marks it resolved', async () => {
@@ -164,8 +191,11 @@ describe('pipeline — other paths', () => {
   it('model explanation that diagnoses is rejected; fallback is fact-only', async () => {
     const db = createPgliteDb(pg);
     const bad = JSON.stringify({ explanation: 'You have vertigo caused by your workout. Nothing to worry about.', cited: [] });
-    const r = await handleMessage({ crewId: 'crew_02', text: 'room tilting' }, {
-      db, llm: fakeLlm([interp({ symptoms: [{ said: 'room tilting', category: 'disorientation', body_system: 'sensorimotor_vestibular' }] })], bad), model: 'fake', asOf: ANCHOR,
+    const t1 = await handleMessage({ crewId: 'crew_02', text: 'room tilting, started just now, mild' }, {
+      db, llm: fakeLlm([interp({ symptoms: [{ said: 'room tilting', category: 'disorientation', body_system: 'sensorimotor_vestibular' }], onset: 'just now', severity: 'mild' })]), model: 'fake', asOf: ANCHOR,
+    });
+    const r = await handleMessage({ crewId: 'crew_02', eventId: t1.eventId!, text: 'None of these', answers: { q_red_flags: 'none' } }, {
+      db, llm: fakeLlm([], bad), model: 'fake', asOf: ANCHOR,
     });
     expect(r.explanationSource).toBe('fallback');
     expect(r.explanation).not.toMatch(/vertigo|worry/i);

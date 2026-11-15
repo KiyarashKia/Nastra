@@ -13,17 +13,26 @@
     "chat": "tsx scripts/chat.ts",
     "ingest": "tsx scripts/ingest.ts",
     "knowledge:test": "tsx scripts/knowledge-test.ts",
-    "surgeon": "tsx scripts/surgeon.ts"
+    "surgeon": "tsx scripts/surgeon.ts",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
   },
   "dependencies": {
     "@huggingface/transformers": "^3.8.1",
+    "@nastra/nhis": "file:vendor/nastra-nhis-0.1.0.tgz",
     "@supabase/supabase-js": "^2.119.0",
+    "next": "^16.4.6",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
     "zod": "^4.1.0"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.16",
     "@electric-sql/pglite-pgvector": "^0.0.17",
     "@types/node": "^22.0.0",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
     "tsx": "^4.19.0",
     "typescript": "^5.6.0",
     "vitest": "^3.2.0"

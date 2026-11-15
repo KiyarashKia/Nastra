@@ -13,18 +13,20 @@ const tilting = base({
 
 const openState: EventState = {
   protocolId: 'sensorimotor_disorientation',
-  asked: [{ id: 'q_red_flags', answer: null }, { id: 'q_onset', answer: null }, { id: 'q_task', answer: null }],
+  asked: [{ id: 'q_red_flags', answer: null }, { id: 'q_onset', answer: null }],
   knownInfo: [],
   turn: 1,
 };
 
 describe('router', () => {
-  it('room tilting → sensorimotor protocol, all mandatory questions, immediate step', () => {
+  it('room tilting → sensorimotor protocol, intake: warning signs + onset (max 2), immediate step', () => {
     const r = route(screenText('I feel the room is tilting'), tilting);
     expect(r.action.kind).toBe('protocol');
     if (r.action.kind !== 'protocol') return;
     expect(r.action.protocolId).toBe('sensorimotor_disorientation');
-    expect(r.action.askNow.map((q) => q.id)).toEqual(['q_red_flags', 'q_onset', 'q_task']);
+    expect(r.action.stage).toBe('intake');
+    expect(r.action.askNow.map((q) => q.id)).toEqual(['q_red_flags', 'q_onset']);
+    expect(r.action.askNow[0].options?.[0]).toMatchObject({ id: 'none', answer: 'no' });
     expect(r.action.showImmediateStep).toBe(true);
     expect(r.urgency).toBe('advisory');
   });
@@ -79,21 +81,34 @@ describe('router', () => {
     expect(r.action.kind).toBe('escalate');
   });
 
-  it('follow-up: red flags cleared + onset + activity → ready for guidance', () => {
+  it('follow-up: red flags cleared + onset + severity, clear message → assess straight away', () => {
     const r = route(screenText('no'), base({
       speech_act: 'report', domain: 'physical_symptom',
       followup_answers: [
         { question_id: 'q_red_flags', answer: 'no', detail: null },
         { question_id: 'q_onset', answer: 'yes', detail: '20 min after workout' },
-        { question_id: 'q_task', answer: 'no', detail: 'in the galley' },
       ],
-      onset: '20 minutes after workout', activity_context: 'in the galley',
+      onset: '20 minutes after workout', severity: 'mild',
     }), openState);
     expect(r.action.kind).toBe('protocol');
     if (r.action.kind !== 'protocol') return;
+    expect(r.action.stage).toBe('assess');
     expect(r.action.readyForGuidance).toBe(true);
     expect(r.action.askNow).toEqual([]);
     expect(r.action.showImmediateStep).toBe(false);
+  });
+
+  it('complete but unclear (medium confidence) → read-back first; confirm → assess', () => {
+    const answers = base({
+      speech_act: 'report', domain: 'physical_symptom', confidence: 'medium',
+      followup_answers: [{ question_id: 'q_red_flags', answer: 'no', detail: null }],
+      onset: 'earlier', severity: 'mild',
+    });
+    const r1 = route(screenText('no, started earlier, mild'), answers, openState);
+    expect(r1.action.kind === 'protocol' && r1.action.stage).toBe('readback');
+    const r2 = route(screenText('Confirm'), base({ speech_act: 'report', domain: 'physical_symptom' }),
+      { ...openState, asked: [{ id: 'q_red_flags', answer: 'no' }], knownInfo: ['onset', 'severity'], phase: 'readback', clarity: 'unclear' }, { confirm: true });
+    expect(r2.action.kind === 'protocol' && r2.action.stage).toBe('assess');
   });
 
   it('follow-up: unclear red-flag answer → ask it again, not ready', () => {

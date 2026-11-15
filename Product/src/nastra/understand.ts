@@ -2,6 +2,7 @@ import { interpret, type InterpretResult } from './interpret/interpret';
 import type { LlmClient } from './llm/provider';
 import { PROTOCOLS } from './protocols/registry';
 import { route, type EventState, type RouteResult } from './router';
+import type { Interpretation } from './interpret/schema';
 import { screenText, type SafetyScreen } from './safety/redflags';
 import type { InputEnvelope } from './types';
 
@@ -28,6 +29,17 @@ export async function understand(
     return { screen, interpretation: null, route: r };
   }
 
+  // Quick replies and read-back confirmation are structured input: resolved in code, no model call.
+  const protocol = opts.state?.protocolId ? PROTOCOLS[opts.state.protocolId] : undefined;
+  if (protocol && opts.state && (env.answers || env.confirm)) {
+    const interp = interpretationFromAnswers(protocol, env.answers ?? {});
+    return {
+      screen,
+      interpretation: { interpretation: interp, ok: true, attempts: 0, latencyMs: 0, errors: [] },
+      route: route(screen, interp, opts.state, { confirm: env.confirm }),
+    };
+  }
+
   const openQuestions = opts.state?.protocolId
     ? (PROTOCOLS[opts.state.protocolId]?.mandatoryQuestions ?? []).filter((q) =>
         opts.state!.asked.some((a) => a.id === q.id && (a.answer === null || a.answer === 'unclear')),
@@ -45,4 +57,24 @@ function emptyInterp() {
     log_entries: [], request_target: null, followup_answers: [],
     urgency_hint: 'warning' as const, confidence: 'high' as const, missing_info: [],
   };
+}
+
+/** Chips → interpretation. Unknown question or option ids are ignored, never guessed. */
+export function interpretationFromAnswers(protocol: (typeof PROTOCOLS)[string], answers: Record<string, string>): Interpretation {
+  const interp: Interpretation = {
+    speech_act: 'report', domain: protocol.appliesTo.domains[0], secondary_domain: null,
+    symptoms: [], onset: null, duration: null, severity: null, activity_context: null,
+    log_entries: [], request_target: null, followup_answers: [],
+    urgency_hint: 'nominal', confidence: 'high', missing_info: [],
+  };
+  for (const [qid, oid] of Object.entries(answers)) {
+    const q = protocol.mandatoryQuestions.find((x) => x.id === qid);
+    const o = q?.options?.find((x) => x.id === oid);
+    if (!q || !o) continue;
+    interp.followup_answers.push({ question_id: q.id, answer: o.answer, detail: o.value ?? o.label });
+    if (q.fills?.includes('onset')) interp.onset = o.value ?? o.label;
+    if (q.fills?.includes('severity')) interp.severity = o.value ?? o.label;
+    if (q.fills?.includes('current_activity')) interp.activity_context = o.value ?? o.label;
+  }
+  return interp;
 }

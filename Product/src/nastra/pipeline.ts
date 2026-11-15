@@ -12,20 +12,25 @@ import { ToolGateway } from './tools/gateway';
 import type { SourceRef, Urgency } from './types';
 import { understand, type Understanding } from './understand';
 import { buildSurgeonBrief } from './surgeon/brief';
+import { buildAssessment, buildReadback, progressReporter, questionOut, type AssessmentOut, type ProgressEvent, type QuestionOut, type Readback } from './station/assessment';
 
 export interface NastraReply {
   eventId: string | null;
   eventStatus: HealthEventRow['status'] | null;
   action: RouteResult['action']['kind'];
   urgency: Urgency;
-  protocol: { id: string; title: string; version: string; status: string } | null;
+  protocol: { id: string; code: string; title: string; version: string; status: string } | null;
+  /** Protocol stage of this turn (symptom/stress reports only). */
+  stage?: 'intake' | 'readback' | 'assess';
+  readback?: Readback;
+  assessment?: AssessmentOut;
   headline?: string;
   immediateStep?: string;
   explanation?: string;
-  explanationSource?: 'model' | 'fallback';
+  explanationSource?: 'model' | 'fallback' | 'template';
   /** Why the model's explanation was rejected, when it was. Shown in dev tools, logged always. */
   explanationIssues?: string[];
-  questions: { id: string; text: string; redFlag: boolean }[];
+  questions: QuestionOut[];
   steps: string[];
   /** Set on every escalation. delivered=false means the alert could not be written: the crew must use voice. */
   alert?: { id: string | null; delivered: boolean; error?: string };
@@ -47,6 +52,8 @@ export interface PipelineDeps {
   asOf?: string;
   /** Local embedder for knowledge ranking. Without it, knowledge is tag-filtered only. */
   embed?: Embedder;
+  /** Real progress of the assessment steps, for the UI. */
+  onProgress?: (e: ProgressEvent) => void;
 }
 
 const ALL_TOOLS: ToolName[] = [
@@ -155,9 +162,17 @@ export async function handleMessage(raw: RawInput, deps: PipelineDeps): Promise<
     } catch (err) {
       alert = { id: null, delivered: false, error: (err as Error).message };
     }
+    // Crew-facing Warning (NHIS WarningDialog). Persistent until acknowledged; linked to PRT-SY-01.
+    const sy = PROTOCOLS.red_flag_response;
+    await deps.db.insert('crew_alerts', {
+      crew_id: env.crewId, created_at: asOf, priority: 'warning', title: 'Red-flag symptom detected',
+      detail: `${a.reasons.join('; ')}. ${alert.delivered ? 'Flight surgeon alerted.' : 'Flight surgeon could not be alerted automatically.'}`,
+      source: a.trigger.kind === 'model_flag' ? 'NASTRA (model-flagged)' : 'NASTRA safety screen', engine: 'nastra-safety',
+      event_id: eventId, protocol_code: sy.code, protocol_title: sy.title,
+    }).catch(() => undefined);
     const steps = alert.delivered ? ESCALATION.steps : [...ESCALATION.steps.slice(0, 2), ESCALATION_ALERT_FAILED];
     return {
-      ...base, eventId, eventStatus: 'escalated', action: 'escalate', urgency: 'warning', protocol: protoInfo(u.route.protocol),
+      ...base, eventId, eventStatus: 'escalated', action: 'escalate', urgency: 'warning', protocol: protoInfo(PROTOCOLS.red_flag_response),
       headline: ESCALATION.headline, steps, alert,
       explanation: `Reason: ${a.reasons.join('; ')}.`, explanationSource: 'fallback', evidence,
       timings: { interpretMs, explainMs: 0, totalMs: Date.now() - started },
@@ -191,33 +206,18 @@ export async function handleMessage(raw: RawInput, deps: PipelineDeps): Promise<
   // ── Protocol path ──────────────────────────────────────────────────────────
   const protocol = u.route.protocol!;
   const interp = u.interpretation!.interpretation;
-  const gw = new ToolGateway(deps.db, { crewId: env.crewId, asOf, allowed: protocol.allowedTools });
-  const [vitals, sleep, mood, mission] = await Promise.all([
-    gw.vitalsNow(), gw.recentSleep(3), gw.recentMood(1), gw.missionContext(),
-  ]);
-  const eventSymptoms = (parse(event?.symptoms) as unknown as { body_system: string }[]) ?? [];
-  const bodySystem = interp.symptoms[0]?.body_system ?? (Array.isArray(eventSymptoms) ? eventSymptoms[0]?.body_system : undefined) ?? protocol.appliesTo.bodySystems[0] ?? null;
-  const domain = protocol.appliesTo.domains[0];
-  const candidates = await gw.similarEpisodes({ bodySystem, domain, missionContext: mission.context });
-  // "Similar" means the same body system. Sharing only the context (e.g. "after exercise")
-  // with an unrelated complaint is not a pattern, and must not be presented as one.
-  const episodes = bodySystem ? candidates.filter((e) => e.matched_on.includes('body_system')) : candidates;
-  const pattern = analysePattern({ episodes, mission, sleep, mood });
-  const tags = protocol.knowledgeTags.length ? protocol.knowledgeTags : [bodySystem ?? 'other'];
-  const queryText = [env.utterance, ...interp.symptoms.map((s) => s.category.replace(/_/g, ' '))].join(' · ');
-  const knowledge = await gw.knowledge(tags, 2, { text: queryText, embed: deps.embed }).catch(() => []);
-  const evidence = buildEvidence({ vitals, sleep, mood, mission, pattern, knowledge, protocol });
+  const action = a as Extract<RouteResult['action'], { kind: 'protocol' }>;
+  const structured = Boolean(env.answers || env.confirm);
 
-  const action = a; // kind === 'protocol'
-  const stage: Stage = !state ? 'first_turn' : action.readyForGuidance ? 'guidance' : 'followup';
-  const answersSummary = interp.followup_answers.length
-    ? interp.followup_answers.map((f) => `${protocol.mandatoryQuestions.find((q) => q.id === f.question_id)?.text ?? f.question_id} → ${f.answer}${f.detail ? ` (${f.detail})` : ''}`).join(' | ')
-    : undefined;
-  const ex = await explain(deps.llm, { model: deps.respondModel ?? deps.model, utterance: env.utterance, stage, evidence, answersSummary });
-
-  const steps = action.readyForGuidance
-    ? [...(GUIDANCE[protocol.id] ?? []), ...(protocol.recheckMinutes ? [recheckLine(protocol.recheckMinutes)] : [])]
-    : [];
+  const values: Record<string, string> = { ...(state?.values ?? {}) };
+  if (!values.description) values.description = env.utterance;
+  if (interp.onset) values.onset = interp.onset;
+  if (interp.severity) values.severity = interp.severity;
+  if (interp.activity_context) values.activity = interp.activity_context;
+  for (const f of interp.followup_answers) {
+    const q = protocol.mandatoryQuestions.find((x) => x.id === f.question_id);
+    if (q?.fills?.includes('trigger') && f.answer !== 'unclear') values.trigger = f.detail ?? 'yes';
+  }
   const newState: EventState = {
     protocolId: protocol.id,
     asked: mergeAsked(state?.asked ?? [], action.askNow.map((q) => q.id), interp.followup_answers),
@@ -225,21 +225,87 @@ export async function handleMessage(raw: RawInput, deps: PipelineDeps): Promise<
     turn: (state?.turn ?? 0) + 1,
     urgency: u.route.urgency,
     redFlagPrompts: (state?.redFlagPrompts ?? 0) + (action.askNow.some((q) => q.redFlag) ? 1 : 0),
+    phase: action.stage === 'assess' ? 'assessed' : action.stage,
+    clarity: state?.clarity === 'unclear' || (!structured && interp.confidence !== 'high') ? 'unclear' : 'clear',
+    values,
   };
-  const replyText = [action.showImmediateStep ? protocol.immediateStep : null, ex.text, ...action.askNow.map((q) => q.text), ...steps].filter(Boolean).join(' ');
+  const protoOut = protoInfo(protocol);
+
+  // Intake: no data pulled, no model-written text. Code asks what the protocol still needs.
+  if (action.stage === 'intake') {
+    const n = action.askNow.length;
+    const said = interp.symptoms.map((x) => x.said).filter(Boolean);
+    const intro = !state
+      ? `${protocol.appliesTo.domains[0] === 'psychological' ? 'I understand this as a stress or wellbeing report' : 'I understand this as a new symptom report'}${said.length ? `: ${said.join(', ')}` : ''}. ` +
+        `${n === 1 ? 'One question' : `${n} questions`} before I look at your data.${values.onset ? ' Onset is noted from your message.' : ''}`
+      : `Thanks. ${n === 1 ? 'One more question' : `${n} more questions`}.`;
+    const replyText = [action.showImmediateStep ? protocol.immediateStep : null, intro, ...action.askNow.map((q) => q.text)].filter(Boolean).join(' ');
+    const eventId = await persist(deps.db, {
+      event, env, u, asOf, status: 'awaiting_followup', protocol, outcome: null, summary: intro, replyText, toolCalls: [], state: newState,
+    });
+    return {
+      ...base, eventId, eventStatus: 'awaiting_followup', action: 'protocol', stage: 'intake', protocol: protoOut,
+      immediateStep: action.showImmediateStep ? protocol.immediateStep ?? undefined : undefined,
+      explanation: intro, explanationSource: 'template',
+      questions: action.askNow.map(questionOut),
+      timings: { interpretMs, explainMs: 0, totalMs: Date.now() - started },
+    };
+  }
+
+  // Read-back: something was unclear, so the crew member confirms before NASTRA assesses.
+  if (action.stage === 'readback') {
+    const gw = new ToolGateway(deps.db, { crewId: env.crewId, asOf, allowed: protocol.allowedTools });
+    const mission = await gw.missionContext().catch(() => undefined);
+    const readback = buildReadback(values, mission);
+    const replyText = `${readback.title}: ${readback.summary}`;
+    const eventId = await persist(deps.db, {
+      event, env, u, asOf, status: 'awaiting_followup', protocol, mission, outcome: null, summary: readback.summary, replyText, toolCalls: gw.calls, state: newState,
+    });
+    return {
+      ...base, eventId, eventStatus: 'awaiting_followup', action: 'protocol', stage: 'readback', protocol: protoOut,
+      explanation: readback.summary, explanationSource: 'template', readback,
+      timings: { interpretMs, explainMs: 0, totalMs: Date.now() - started },
+    };
+  }
+
+  // Assess: pull data with real progress, compare history, retrieve NASA evidence, explain.
+  const gw = new ToolGateway(deps.db, { crewId: env.crewId, asOf, allowed: protocol.allowedTools });
+  const step = progressReporter(deps.onProgress, 6);
+  const vitals = await step('Checking current telemetry', () => gw.vitalsNow());
+  const [sleep, mood] = await step('Reviewing sleep and check-ins', () => Promise.all([gw.recentSleep(3), gw.recentMood(1)]));
+  const mission = await step('Reading mission context', () => gw.missionContext());
+  const eventSymptoms = (parse(event?.symptoms) as unknown as { body_system: string }[]) ?? [];
+  const bodySystem = interp.symptoms[0]?.body_system ?? (Array.isArray(eventSymptoms) ? eventSymptoms[0]?.body_system : undefined) ?? protocol.appliesTo.bodySystems[0] ?? null;
+  const domain = protocol.appliesTo.domains[0];
+  const candidates = await step('Comparing similar events', () => gw.similarEpisodes({ bodySystem, domain, missionContext: mission.context }));
+  // "Similar" means the same body system. Sharing only the context (e.g. "after exercise")
+  // with an unrelated complaint is not a pattern, and must not be presented as one.
+  const episodes = bodySystem ? candidates.filter((e) => e.matched_on.includes('body_system')) : candidates;
+  const pattern = analysePattern({ episodes, mission, sleep, mood });
+  const tags = protocol.knowledgeTags.length ? protocol.knowledgeTags : [bodySystem ?? 'other'];
+  const storedSymptoms = Array.isArray(eventSymptoms) ? (eventSymptoms as { category?: string }[]) : [];
+  const categories = [...new Set([...interp.symptoms, ...storedSymptoms].map((x) => (x.category ?? '').replace(/_/g, ' ')).filter(Boolean))];
+  const queryText = [values.description, ...categories].join(' · ');
+  const knowledge = await step('Finding relevant NASA evidence', () => gw.knowledge(tags, 2, { text: queryText, embed: deps.embed }).catch(() => []));
+  const evidence = buildEvidence({ vitals, sleep, mood, mission, pattern, knowledge, protocol });
+
+  const answersSummary = Object.entries(values).filter(([k]) => k !== 'description').map(([k, v]) => `${k}: ${v}`).join(' | ') || undefined;
+  const ex = await step('Writing the assessment', () =>
+    explain(deps.llm, { model: deps.respondModel ?? deps.model, utterance: values.description, stage: 'guidance', evidence, answersSummary }));
+
+  const steps = [...(GUIDANCE[protocol.id] ?? []), ...(protocol.recheckMinutes ? [recheckLine(protocol.recheckMinutes)] : [])];
+  const assessment = buildAssessment({ protocol, evidence, explanation: ex, vitals, sleep, knowledge, steps, clarity: newState.clarity ?? 'clear', asOf, values });
+  const replyText = [ex.text, ...steps].join(' ');
   const eventId = await persist(deps.db, {
     event, env, u, asOf, status: 'awaiting_followup', protocol, mission, sleep, mood,
-    outcome: action.readyForGuidance ? 'monitoring' : null, summary: ex.text, replyText,
-    toolCalls: gw.calls, state: newState, explanation: ex,
-    recheckDueAt: action.readyForGuidance && protocol.recheckMinutes ? new Date(Date.parse(asOf) + protocol.recheckMinutes * 60_000).toISOString() : undefined,
+    outcome: 'monitoring', summary: ex.text, replyText, toolCalls: gw.calls, state: newState, explanation: ex,
+    recheckDueAt: protocol.recheckMinutes ? new Date(Date.parse(asOf) + protocol.recheckMinutes * 60_000).toISOString() : undefined,
   });
 
   return {
-    ...base, eventId, eventStatus: 'awaiting_followup', action: 'protocol', protocol: protoInfo(protocol),
-    immediateStep: action.showImmediateStep ? protocol.immediateStep ?? undefined : undefined,
+    ...base, eventId, eventStatus: 'awaiting_followup', action: 'protocol', stage: 'assess', protocol: protoOut,
     explanation: ex.text, explanationSource: ex.source, explanationIssues: ex.violationsSeen,
-    questions: action.askNow.map((q) => ({ id: q.id, text: q.text, redFlag: q.redFlag })),
-    steps, recheckMinutes: action.readyForGuidance ? protocol.recheckMinutes ?? undefined : undefined,
+    steps, recheckMinutes: protocol.recheckMinutes ?? undefined, assessment,
     evidence, sources: protocol.sources,
     timings: { interpretMs, explainMs: ex.latencyMs, totalMs: Date.now() - started },
   };
@@ -374,7 +440,7 @@ function knownFrom(i: { onset: string | null; duration: string | null; severity:
 }
 
 function protoInfo(p: Protocol | null) {
-  return p ? { id: p.id, title: p.title, version: p.version, status: p.status } : null;
+  return p ? { id: p.id, code: p.code, title: p.title, version: p.version, status: p.status } : null;
 }
 
 function parse(v: unknown): Record<string, unknown> {

@@ -92,7 +92,7 @@ export function buildEvidence(input: {
     if (upcoming.length) bits.push(`coming up: ${upcoming.map((e) => `${e.title} in ${fmt(e.hours_until)} h`).join(', ')}`);
     items.push({
       kind: 'context',
-      title: `Mission context: day ${c.mission_day}, ${c.context.replace('_', '-')}`,
+      title: `Mission context: MET ${String(Math.max(0, c.mission_day - 1)).padStart(3, '0')}, ${c.context.replace('_', '-')}`,
       detail: bits.join('; ') + '.',
       source: { label: 'Mission timeline (simulated)', use: 'simulated_data' },
     });

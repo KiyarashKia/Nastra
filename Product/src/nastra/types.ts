@@ -75,6 +75,10 @@ export interface InputEnvelope {
   attachments: Attachment[];
   /** Present when this message answers follow-ups inside an open health event. */
   eventId?: string;
+  /** Quick-reply answers tapped in the UI: question id → option id. Resolved in code, never by the model. */
+  answers?: Record<string, string>;
+  /** The crew member confirmed NASTRA's read-back. */
+  confirm?: boolean;
 }
 
 export interface SourceRef {

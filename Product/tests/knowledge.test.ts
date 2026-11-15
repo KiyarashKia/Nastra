@@ -70,8 +70,12 @@ describe('knowledge', () => {
           : { content: JSON.stringify({ explanation: 'Your heart rate is higher than your usual at this point after exercise [E1].', cited: ['E1'] }), latencyMs: 1, usedSchemaMode: 'json_schema' };
       },
     };
-    const r = await handleMessage({ crewId: 'crew_02', text: 'I feel the room is tilting' }, { db: createPgliteDb(pg), llm, model: 'fake', asOf: ANCHOR, embed });
-    const k = r.evidence.filter((e) => e.kind === 'knowledge');
+    const db = createPgliteDb(pg);
+    const t1 = await handleMessage({ crewId: 'crew_02', text: 'I feel the room is tilting' }, { db, llm, model: 'fake', asOf: ANCHOR, embed });
+    const r = await handleMessage({ crewId: 'crew_02', eventId: t1.eventId!, text: 'chips', answers: { q_red_flags: 'none', q_onset: 'just_now' } }, { db, llm, model: 'fake', asOf: ANCHOR, embed });
+    const r2 = r.stage === 'assess' ? r : await handleMessage({ crewId: 'crew_02', eventId: t1.eventId!, text: 'Mild', answers: { q_severity: 'mild' } }, { db, llm, model: 'fake', asOf: ANCHOR, embed });
+    expect(r2.stage).toBe('assess');
+    const k = r2.evidence.filter((e) => e.kind === 'knowledge');
     expect(k.length).toBeGreaterThan(0);
     expect(k[0].title).toMatch(/^NASA HRP — Risk of Altered Sensorimotor and Vestibular Function — /);
     expect(k[0].source.url).toBe('https://www.nasa.gov/reference/risk-of-altered-sensorimotor-and-vestibular-function/');

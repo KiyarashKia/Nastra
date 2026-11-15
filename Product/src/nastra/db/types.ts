@@ -11,7 +11,7 @@ export interface Db {
   getById<T = Record<string, unknown>>(table: 'health_events', id: string): Promise<T | null>;
 }
 
-export type WritableTable = 'health_events' | 'event_turns' | 'tool_calls' | 'mood_logs' | 'sleep_logs' | 'surgeon_alerts';
+export type WritableTable = 'health_events' | 'event_turns' | 'tool_calls' | 'mood_logs' | 'sleep_logs' | 'surgeon_alerts' | 'crew_alerts';
 
 export interface HealthEventRow {
   id: string;

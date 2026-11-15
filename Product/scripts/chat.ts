@@ -5,6 +5,7 @@
  *
  * Commands:  /reseed  reset demo data to "now"      /new    start a new event
  *            /close   close the open event          /ev     show/hide evidence
+ *            /a red_flags.none onset.last_hour   tap quick replies     /confirm  confirm the read-back
  *            /crew X  switch crew member            /quit
  */
 import readline from 'node:readline/promises';
@@ -47,8 +48,17 @@ function render(r: NastraReply) {
   }
   if (r.questions.length) {
     console.log('');
-    for (const q of r.questions) console.log(`  ${q.redFlag ? `${c.red}!${c.x}` : '?'} ${q.text}`);
+    for (const q of r.questions) {
+      console.log(`  ${q.redFlag ? `${c.red}!${c.x}` : '?'} ${q.text}`);
+      if (q.options.length) console.log(`    ${c.dim}${q.options.map((o) => `${q.id.replace('q_', '')}.${o.id}`).join('  ')}   (type e.g. /a red_flags.none onset.last_hour)${c.x}`);
+    }
   }
+  if (r.readback) {
+    console.log(`\n${c.b}${r.readback.title}${c.x}`);
+    for (const i of r.readback.items) console.log(`  ${i.label.padEnd(14)} ${i.value}`);
+    console.log(`  ${c.dim}type /confirm to assess, or correct it in your own words${c.x}`);
+  }
+  if (r.assessment) console.log(`  ${c.dim}confidence: ${r.assessment.confidence.level} · ${r.assessment.confidence.meaning}${c.x}`);
   if (r.confirmLog?.length) console.log(`  ${r.confirmLog.map((e) => `${e.field}: ${e.value}`).join(' · ')}   ${c.dim}(type "yes" to save)${c.x}`);
   if (showEvidence && r.evidence.length) {
     console.log(`\n${c.dim}Evidence`);
@@ -83,7 +93,18 @@ for (;;) {
       await commitLog(db, crewId, pendingLog); console.log(`${c.grn}saved${c.x}`); pendingLog = undefined; continue;
     }
     pendingLog = undefined;
-    const r = await handleMessage({ crewId, text: line, eventId }, { db, llm, model, respondModel, embed });
+    let answers: Record<string, string> | undefined;
+    let confirm: boolean | undefined;
+    let text = line;
+    if (line === '/confirm') { confirm = true; text = 'Confirm & assess'; }
+    if (line.startsWith('/a ')) {
+      answers = Object.fromEntries(line.slice(3).trim().split(/\s+/).map((pair) => { const [q, o] = pair.split('.'); return [`q_${q}`, o]; }));
+      text = Object.values(answers).join(' · ');
+    }
+    const r = await handleMessage({ crewId, text, eventId, answers, confirm }, {
+      db, llm, model, respondModel, embed,
+      onProgress: (p) => { if (p.state === 'running') process.stdout.write(`${c.dim}  ${p.step}/${p.of} ${p.label}…${c.x}\n`); },
+    });
     render(r);
     if (r.action === 'log') pendingLog = r.confirmLog;
     eventId = r.eventStatus === 'awaiting_followup' || r.eventStatus === 'open' ? r.eventId ?? undefined : undefined;

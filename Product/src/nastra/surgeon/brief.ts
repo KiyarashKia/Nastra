@@ -158,6 +158,7 @@ function triggerShort(t: EscalationTrigger): string {
     case 'unanswered_check': return `warning-signs check unanswered ${t.prompts}×`;
     case 'unclear_message': return 'unclear message during open safety check';
     case 'model_flag': return 'possible emergency (model-rated)';
+    case 'crew_request': return 'requested a consult';
   }
 }
 
@@ -174,6 +175,8 @@ function triggerLong(t: EscalationTrigger, utterance: string, reported: { sign: 
       return `Message could not be understood while the warning-signs question was open: "${short(utterance, 80)}". Possible deterioration.`;
     case 'model_flag':
       return `Model rated the message a possible emergency (unverified). No deterministic red flag matched.${signs}`;
+    case 'crew_request':
+      return `Crew member pressed Escalate (${t.target === 'crew_medical_officer' ? 'crew medical officer' : 'flight surgeon'}).${t.note ? ` Note: "${t.note}".` : ''}${signs}`;
   }
 }
 

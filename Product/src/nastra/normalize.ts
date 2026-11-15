@@ -11,6 +11,8 @@ export interface RawInput {
   attachments?: Omit<Attachment, 'confirmed'>[] & { confirmed?: boolean }[];
   eventId?: string;
   ts?: string;
+  answers?: Record<string, string>;
+  confirm?: boolean;
 }
 
 /**
@@ -39,6 +41,8 @@ export function normalizeInput(raw: RawInput): InputEnvelope {
     utterance,
     attachments,
     eventId: raw.eventId,
+    answers: raw.answers && Object.keys(raw.answers).length ? { ...raw.answers } : undefined,
+    confirm: raw.confirm === true ? true : undefined,
   };
 }
 

@@ -1,0 +1,116 @@
+/* NASTRA Station — Spectre-style skin over NHIS.
+   Product-side override: the NHIS package is untouched. Remaps NHIS primitives (so every NHIS
+   component follows), then adds HUD brackets, mono uppercase labels and a faint blueprint grid.
+   Status colours (red/yellow/blue/violet) are NOT changed: colour still means alert level.
+   Cyan is structural only: selection, focus, brackets. Verified ≥3:1 (UI) and ≥7:1 (text) on every surface. */
+
+:root,
+[data-nhis-theme='station-dark'] {
+  /* Deep slate neutrals (Spectre #020617 family, desaturated). Primary text eased from #f6f7f8 to cut halation. */
+  --nhis-primitive-color-neutral-50: #e8edf2;
+  --nhis-primitive-color-neutral-100: #d5dce4;
+  --nhis-primitive-color-neutral-200: #b8c1cb;
+  --nhis-primitive-color-neutral-300: #9eaab5;
+  --nhis-primitive-color-neutral-350: #93a0ac;
+  --nhis-primitive-color-neutral-400: #7d8a96;
+  --nhis-primitive-color-neutral-500: #67757f;
+  --nhis-primitive-color-neutral-600: #4a5661;
+  --nhis-primitive-color-neutral-700: #2b3640;
+  --nhis-primitive-color-neutral-750: #1d2630;
+  --nhis-primitive-color-neutral-800: #141b23;
+  --nhis-primitive-color-neutral-850: #10161d;
+  --nhis-primitive-color-neutral-900: #0a0f14;
+  --nhis-primitive-color-neutral-950: #05080b;
+  --nhis-primitive-color-neutral-1000: #020406;
+
+  /* Spectre: 0px radius everywhere */
+  --nhis-primitive-radius-sm: 0px;
+  --nhis-primitive-radius-md: 0px;
+  --nhis-primitive-radius-lg: 0px;
+
+  /* Single structural accent */
+  --st-accent: #38bdf8;
+  --st-accent-dim: rgba(56, 189, 248, 0.55);
+  --st-accent-line: rgba(56, 189, 248, 0.16);
+  --nhis-color-interactive-selected-indicator: var(--st-accent);
+  --nhis-color-border-focus: var(--st-accent);
+  --nhis-color-border-subtle: #1b2733;
+}
+
+/* Background: solid slate, ambient top glow, blueprint grid in the gutters only (panels are opaque, so no text sits on a pattern). */
+body {
+  background:
+    radial-gradient(1200px 500px at 50% -120px, rgba(56, 189, 248, 0.06), transparent 70%),
+    var(--nhis-color-surface-canvas);
+  scrollbar-color: #2b3a46 transparent;
+  scrollbar-width: thin;
+}
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(var(--st-accent-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--st-accent-line) 1px, transparent 1px);
+  background-size: 48px 48px;
+  opacity: 0.35;
+  -webkit-mask-image: radial-gradient(ellipse at 50% 30%, #000 0%, transparent 75%);
+  mask-image: radial-gradient(ellipse at 50% 30%, #000 0%, transparent 75%);
+}
+.st-shell { position: relative; z-index: 1; }
+
+/* Simulation cue stays (NHIS safety rule) but calm: no diagonal hatch, no 4px frame. Header stripe and footer label remain. */
+.nhis-station-frame.is-simulated {
+  background-image: none;
+  box-shadow: inset 0 0 0 1px rgba(184, 143, 230, 0.45);
+}
+
+/* HUD corner brackets on key containers */
+.st-card, .st-conversation, .nhis-vital, .nhis-ai-assessment, .nhis-panel, .st-event-row { position: relative; }
+.st-card::after, .st-conversation::after, .nhis-vital::after, .nhis-ai-assessment::after, .nhis-panel::after, .st-event-row::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  pointer-events: none;
+  --b: linear-gradient(var(--st-accent-dim), var(--st-accent-dim));
+  background:
+    var(--b) top left / 12px 1px no-repeat, var(--b) top left / 1px 12px no-repeat,
+    var(--b) top right / 12px 1px no-repeat, var(--b) top right / 1px 12px no-repeat,
+    var(--b) bottom left / 12px 1px no-repeat, var(--b) bottom left / 1px 12px no-repeat,
+    var(--b) bottom right / 12px 1px no-repeat, var(--b) bottom right / 1px 12px no-repeat;
+}
+.st-event-row::after { background-size: 8px 1px, 1px 8px, 8px 1px, 1px 8px, 8px 1px, 1px 8px, 8px 1px, 1px 8px; }
+
+/* Readout typography: mono, uppercase, tracked (Spectre). Sentences stay sentence-case Atkinson Sans. */
+.st-page__title, .st-card__title, .st-nav__item, .st-table th, .st-tag,
+.nhis-vital__label, .nhis-panel__title, .nhis-readout__label, .nhis-trend__title, .nhis-message__role {
+  font-family: var(--nhis-font-family-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.st-page__title { font-size: 20px; font-weight: 500; letter-spacing: 0.16em; }
+.st-page__title .st-card__sub, .st-card__sub { text-transform: none; letter-spacing: 0; font-family: var(--nhis-font-family-sans); }
+.st-card__title, .st-table th, .nhis-vital__label, .nhis-panel__title, .nhis-readout__label, .nhis-trend__title { font-size: 13px; font-weight: 500; color: var(--nhis-color-text-secondary); }
+.st-card__title::before { content: ''; display: inline-block; width: 6px; height: 6px; margin-right: 8px; background: var(--st-accent); vertical-align: 1px; }
+.st-nav__item { font-size: 12px; letter-spacing: 0.04em; }
+.st-footer { font-size: 13px; }
+.st-footer__sim { font-family: var(--nhis-font-family-mono); font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em; }
+.st-tag { font-size: 12px; }
+
+/* Structure */
+.st-nav { background: linear-gradient(180deg, var(--nhis-color-surface-panel), var(--nhis-color-surface-canvas)); }
+.st-nav__item.is-active { box-shadow: inset 2px 0 0 var(--st-accent); background: rgba(56, 189, 248, 0.07); }
+.st-nav__item.is-active svg { color: var(--st-accent); }
+.st-main { scrollbar-gutter: stable; }
+.st-status { letter-spacing: 0.01em; }
+.st-chip, .st-metric { transition: border-color 0.15s, background-color 0.15s; }
+.st-chip:hover, .st-metric:hover { border-color: var(--st-accent-dim); }
+.st-metric.is-active, .st-chip.is-active { box-shadow: inset 2px 0 0 var(--st-accent); }
+.st-rec-dot { border-radius: 50%; }
+
+@media (forced-colors: active) {
+  body::before, .st-card::after, .st-conversation::after, .nhis-vital::after, .nhis-ai-assessment::after, .nhis-panel::after, .st-event-row::after { display: none; }
+  .st-nav__item.is-active { border-left: 3px solid Highlight; }
+}

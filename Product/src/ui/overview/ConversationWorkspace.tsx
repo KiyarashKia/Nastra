@@ -183,7 +183,7 @@ function AnalysisProgress({ item }: { item: Extract<ChatItem, { kind: 'progress'
   const done = item.steps.filter((s) => s.state === 'done').length;
   const head = item.state === 'running' ? 'Checking your health context' : item.state === 'done' ? 'Checked your health context' : item.state === 'stopped' ? 'Stopped' : 'Could not finish';
   return (
-    <div className="st-progress" role="status">
+    <div className="st-progress">
       <div className="st-progress__head">
         <strong>{head}</strong>
         <span className="nhis-num">{done} of {of}</span>
@@ -361,9 +361,11 @@ function Composer({ busy, onStop, onSend, composer, onImage }: {
       <div className="nhis-conversation__composer-row st-composer__row">
         <AIDisclosure compact />
         <div className="st-composer__controls">
-          {voice.state === 'listening' && <span className="st-voice-state" role="status"><span className="st-rec-dot" aria-hidden="true" /> Listening · <span className="nhis-num">{voice.seconds}</span> s</span>}
-          {voice.state === 'recognizing' && <span className="st-voice-state" role="status">Transcribing on this computer…</span>}
-          {voice.state === 'unavailable' && voice.reason && <span className="st-voice-state is-error" role="status">{voice.reason}</span>}
+          <span className={`st-voice-state${voice.state === 'unavailable' ? ' is-error' : ''}`} role="status">
+            {voice.state === 'listening' && <><span className="st-rec-dot" aria-hidden="true" /> Listening · <span className="nhis-num">{voice.seconds}</span> s</>}
+            {voice.state === 'recognizing' && 'Transcribing on this computer…'}
+            {voice.state === 'unavailable' && voice.reason}
+          </span>
           <Button iconOnly icon="mic" aria-label={voiceLabel} aria-pressed={voice.state === 'listening'} intent={voice.state === 'listening' ? 'primary' : 'secondary'}
             isPending={voice.state === 'recognizing'} isDisabled={busy} onPress={voice.toggle} />
           <FileTrigger acceptedFileTypes={['image/png', 'image/jpeg', 'image/webp']} onSelect={(l) => { const f = l?.[0]; if (f) void readImage(f); }}>

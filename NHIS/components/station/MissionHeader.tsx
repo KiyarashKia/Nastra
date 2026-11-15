@@ -17,20 +17,41 @@ export interface MissionHeaderProps {
   link: { state: LinkState; delayLabel?: string };
   alerts: readonly OperationalAlert[];
   /** Same position on every screen (A18). */
-  escalation: { state: EscalationState; onEscalate: () => void; isDisabled?: boolean };
+  escalation: {
+    state: EscalationState;
+    onEscalate: () => void;
+    isDisabled?: boolean;
+    /** Who the escalation went to. Defaults to the flight surgeon (ground). */
+    recipient?: EscalationRecipient;
+  };
   onOpenAlerts?: () => void;
   /** Supplied NASTRA logo. Kept as-is; dark ground required. */
   logo?: ReactNode;
 }
 
-const ESC_LABEL: Record<EscalationState, string> = {
-  draft: 'Escalate to flight surgeon',
-  sending: 'Sending to flight surgeon',
-  sent: 'Sent · awaiting receipt',
-  received: 'Received by ground',
-  answered: 'Flight surgeon replied',
-  failed: 'Not sent · retry',
+export type EscalationRecipient = 'flight_surgeon' | 'crew_medical_officer';
+
+const RECIPIENT: Record<EscalationRecipient, { who: string; where: string; replied: string }> = {
+  flight_surgeon: { who: 'flight surgeon', where: 'Received by ground', replied: 'Flight surgeon replied' },
+  crew_medical_officer: { who: 'crew medical officer', where: 'Received by CMO onboard', replied: 'CMO replied' },
 };
+
+export function escalationLabel(state: EscalationState, recipient: EscalationRecipient = 'flight_surgeon'): string {
+  const r = RECIPIENT[recipient];
+  return {
+    draft: 'Escalate to flight surgeon',
+    sending: `Sending to ${r.who}`,
+    sent: `Sent to ${r.who} · awaiting receipt`,
+    received: r.where,
+    answered: r.replied,
+    failed: 'Not sent · retry',
+  }[state];
+}
+
+export function escalationStageLabels(recipient: EscalationRecipient = 'flight_surgeon') {
+  const r = RECIPIENT[recipient];
+  return { title: recipient === 'flight_surgeon' ? 'Flight surgeon escalation' : 'Crew medical officer escalation', received: r.where };
+}
 
 /**
  * Persistent Station header: identity, mode, time, link, alert counts and the
@@ -74,7 +95,7 @@ export function MissionHeader({ crewMember, mode, clocks, link, alerts, escalati
           isPending={escalation.state === 'sending'}
           className="nhis-mission-header__escalate"
         >
-          {ESC_LABEL[escalation.state]}
+          {escalationLabel(escalation.state, escalation.recipient)}
         </Button>
       </div>
     </header>

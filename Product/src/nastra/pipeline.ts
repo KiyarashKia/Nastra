@@ -6,9 +6,11 @@ import { normalizeInput, type RawInput } from './normalize';
 import { analysePattern } from './patterns';
 import { PROTOCOLS, type Protocol, type ToolName } from './protocols/registry';
 import { explain, type ExplanationResult, type Stage } from './respond/respond';
-import { CLARIFY, DISCLAIMER, ESCALATION, ESCALATION_ALERT_FAILED, GUIDANCE, recheckLine, REDIRECT } from './respond/templates';
+import { CLARIFY, DISCLAIMER, ESCALATION, ESCALATION_ALERT_FAILED, ESCALATION_FOLLOWUP, GUIDANCE, recheckLine, REDIRECT } from './respond/templates';
 import type { EventState, RouteResult } from './router';
 import { ToolGateway } from './tools/gateway';
+import { escalationState } from './station/read';
+import { receiptLine } from './station/link';
 import type { SourceRef, Urgency } from './types';
 import { understand, type Understanding } from './understand';
 import { buildSurgeonBrief } from './surgeon/brief';
@@ -32,6 +34,8 @@ export interface NastraReply {
   explanationIssues?: string[];
   questions: QuestionOut[];
   steps: string[];
+  /** True when this turn continued an already-active escalation (no new alert was sent). */
+  followup?: boolean;
   /** Set on every escalation. delivered=false means the alert could not be written: the crew must use voice. */
   alert?: { id: string | null; delivered: boolean; error?: string };
   recheckMinutes?: number;
@@ -102,6 +106,33 @@ export async function handleMessage(raw: RawInput, deps: PipelineDeps): Promise<
     evidence: [] as EvidenceItem[],
     sources: [] as SourceRef[],
   };
+
+  // ── Inside an active escalation: stay with it ──────────────────────────────
+  // A new emergency still escalates again (the safety screen ran above). Data questions and logs are
+  // answered normally. Everything else ("what do I do now", unclear text, new symptoms) is answered
+  // in the context of the open escalation instead of starting a new conversation.
+  if (a.kind !== 'escalate' && a.kind !== 'answer_data' && a.kind !== 'log') {
+    const esc = await activeEscalation(deps.db, asOf, env.eventId).catch(() => null);
+    if (esc) {
+      const status = receiptLine(await escalationState(deps.db, env.crewId, asOf).catch(() => ({ state: 'draft' as const })));
+      const reason = String(esc.ai_summary ?? '').replace(/^Escalated:\s*/, '') || 'red-flag symptom';
+      const replyText = [ESCALATION_FOLLOWUP.headline, status, ...ESCALATION_FOLLOWUP.steps].join(' ');
+      await deps.db.insert('event_turns', {
+        event_id: esc.id, ts: asOf, role: 'crew', content: env.utterance,
+        payload: { safety: u.screen, interpretation: u.interpretation?.interpretation ?? null, routed_as: a.kind },
+      }).catch(() => undefined);
+      await deps.db.insert('event_turns', {
+        event_id: esc.id, ts: new Date(Date.parse(asOf) + 1).toISOString(), role: 'nastra', content: replyText,
+        payload: { action: 'escalation_followup', urgency: 'warning' },
+      }).catch(() => undefined);
+      return {
+        ...base, urgency: 'warning', eventId: String(esc.id), eventStatus: 'escalated', action: 'escalate', followup: true,
+        protocol: protoInfo(PROTOCOLS.red_flag_response), headline: ESCALATION_FOLLOWUP.headline, steps: [...ESCALATION_FOLLOWUP.steps],
+        explanation: `Reason: ${reason}. ${status}`, explanationSource: 'fallback',
+        timings: { interpretMs, explainMs: 0, totalMs: Date.now() - started },
+      };
+    }
+  }
 
   // ── Paths with no model-written text and no DB write ───────────────────────
   if (a.kind === 'clarify' || a.kind === 'redirect') {
@@ -450,3 +481,13 @@ function parse(v: unknown): Record<string, unknown> {
 }
 
 export { PROTOCOLS };
+
+/** An escalation stays active for this long unless the crew closes the event. */
+const ESCALATION_ACTIVE_MS = 2 * 3600_000;
+
+async function activeEscalation(db: PipelineDeps['db'], asOf: string, eventId?: string | null) {
+  if (!eventId) return null;
+  const r = await db.getById<Record<string, unknown>>('health_events', eventId).catch(() => null);
+  const fresh = !!r && r.status === 'escalated' && new Date(String(r.closed_at ?? r.opened_at)).getTime() > Date.parse(asOf) - ESCALATION_ACTIVE_MS;
+  return fresh ? r : null;
+}

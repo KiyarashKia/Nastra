@@ -1,3 +1,4 @@
+import { escalationStageLabels, type EscalationRecipient } from './MissionHeader';
 import { useState } from 'react';
 import { DropZone, FileTrigger } from 'react-aria-components';
 import { Button } from './controls';
@@ -141,21 +142,24 @@ export interface EscalationStatusProps {
   onSend?: () => void;
   onRetry?: () => void;
   onDismiss?: () => void;
+  /** Who the escalation goes to. Defaults to the flight surgeon (ground). */
+  recipient?: EscalationRecipient;
 }
 
-export function EscalationStatus({ state, package: pkg, times = {}, link, priority = 'routine', reply, onSend, onRetry, onDismiss }: EscalationStatusProps) {
+export function EscalationStatus({ state, package: pkg, times = {}, link, priority = 'routine', reply, onSend, onRetry, onDismiss, recipient = 'flight_surgeon' }: EscalationStatusProps) {
+  const lbl = escalationStageLabels(recipient);
   const stages: Array<['sent' | 'received' | 'answered', string]> = [
     ['sent', 'Sent'],
-    ['received', 'Received by ground'],
+    ['received', lbl.received],
     ['answered', 'Answered'],
   ];
   const reached = (k: 'sent' | 'received' | 'answered') =>
     ({ draft: 0, sending: 0, failed: 0, sent: 1, received: 2, answered: 3 })[state] >= { sent: 1, received: 2, answered: 3 }[k];
   return (
-    <section className={cx('nhis-escalation', priority === 'high' && 'is-high')} aria-label="Flight surgeon escalation">
+    <section className={cx('nhis-escalation', priority === 'high' && 'is-high')} aria-label={lbl.title}>
       <header className="nhis-escalation__head">
         <h3 className="nhis-escalation__title">
-          <Glyph name="escalate" size={20} /> Flight surgeon escalation
+          <Glyph name="escalate" size={20} /> {lbl.title}
           {priority === 'high' && <span className="nhis-escalation__priority">High priority</span>}
         </h3>
         <LinkIndicator state={link.state} delayLabel={link.delayLabel} />

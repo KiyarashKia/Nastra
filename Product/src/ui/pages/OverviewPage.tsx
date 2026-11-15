@@ -24,20 +24,7 @@ export function OverviewPage() {
 
       <div className="st-overview__conversation"><ConversationWorkspace /></div>
 
-      <div className="st-overview__side">
-        {active.slice(0, 1).map((a) => (
-          <AlertBanner key={a.id} alert={toNhisAlert(a)}
-            onAcknowledge={(x) => void ackAlert(x.id)} onSuppress={(x) => void suppressAlert(x.id)}
-            onOpenProtocol={() => router.push('/protocol')}>
-          </AlertBanner>
-        ))}
-        {active.length > 1 && (
-          <Disclosure title={`${active.length - 1} more active alert${active.length > 2 ? 's' : ''}`}>
-            <AlertList alerts={active.slice(1).map(toNhisAlert)} onAcknowledge={(x) => void ackAlert(x.id)} onSuppress={(x) => void suppressAlert(x.id)} onOpenProtocol={() => router.push('/protocol')} />
-          </Disclosure>
-        )}
-
-        <section className="st-card" aria-label="Health snapshot">
+      <section className="st-card st-vitals" aria-label="Health snapshot">
           <h2 className="st-card__title">Health snapshot <span className="st-card__sub">vs your own baseline</span></h2>
           <div className="st-tiles">
             {tiles.map((t) => (
@@ -59,7 +46,20 @@ export function OverviewPage() {
             </article>
           </div>
           {stale.length > 0 && <DataGapNotice title="Some readings are not current" missing={stale.map((s) => s.label)} consequence="NASTRA will say so when it uses them." />}
-        </section>
+      </section>
+
+      <div className="st-overview__side">
+        {active.slice(0, 1).map((a) => (
+          <AlertBanner key={a.id} alert={toNhisAlert(a)}
+            onAcknowledge={(x) => void ackAlert(x.id)} onSuppress={(x) => void suppressAlert(x.id)}
+            onOpenProtocol={() => router.push('/protocol')}>
+          </AlertBanner>
+        ))}
+        {active.length > 1 && (
+          <Disclosure title={`${active.length - 1} more active alert${active.length > 2 ? 's' : ''}`}>
+            <AlertList alerts={active.slice(1).map(toNhisAlert)} onAcknowledge={(x) => void ackAlert(x.id)} onSuppress={(x) => void suppressAlert(x.id)} onOpenProtocol={() => router.push('/protocol')} />
+          </Disclosure>
+        )}
 
         {o.pattern && (
           <PatternCard pattern={o.pattern.pattern} records={o.pattern.records} window={o.pattern.window}

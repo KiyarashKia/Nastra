@@ -10,10 +10,11 @@ type P = Awaited<ReturnType<typeof getProtocolView>>;
 export function ProtocolPage() {
   const router = useRouter();
   const { data, error } = useApi<P>('/api/protocol', 10_000);
-  const { escalate, status, refresh } = useStation();
+  const { escalate, status, refresh, overview } = useStation();
   if (!data) return <p className="st-empty" role="status">{error ? `Protocol unavailable: ${error}` : 'Loading…'}</p>;
   const a = data.active;
-  const esc = data.escalation;
+  // Shared escalation state: refreshed on time when the simulated receipt is due.
+  const esc = overview?.escalation ?? data.escalation;
 
   return (
     <div className="st-page">
@@ -41,7 +42,8 @@ export function ProtocolPage() {
             </section>
             <EscalationStatus state={esc.state} package={{ summary: esc.state === 'draft' ? a.utterance || a.title : esc.headline ?? a.title, telemetryWindow: 'Last 30 min vitals vs your baseline; last 3 nights of sleep', evidence: ['Conversation', 'Vitals', 'Sleep', 'Check-in', 'Mission context'] }}
               times={esc.state !== 'draft' ? { sent: { iso: esc.sentAt!, system: 'UTC' as const }, ...(esc.receivedAt ? { received: { iso: esc.receivedAt, system: 'UTC' as const } } : {}) } : undefined}
-              link={{ state: 'connected', delayLabel: status?.linkDelayLabel }} reply={esc.reply ?? undefined}
+              link={{ state: 'connected', delayLabel: status?.linkDelayLabel }} reply={esc.state !== 'draft' ? esc.reply ?? undefined : undefined}
+              recipient={esc.state !== 'draft' ? esc.target : 'flight_surgeon'}
               onSend={() => void escalate('flight_surgeon').then(refresh)} />
           </aside>
         </div>

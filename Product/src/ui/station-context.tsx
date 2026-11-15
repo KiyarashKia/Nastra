@@ -97,6 +97,14 @@ export function StationProvider({ children }: { children: ReactNode }) {
     return () => clearInterval(t);
   }, [refresh]);
 
+  // Escalation receipt: refresh the moment the simulated ground/CMO receipt is due, so 'Sent' never sticks.
+  const receiptDueAt = overview?.escalation && 'receiptDueAt' in overview.escalation ? overview.escalation.receiptDueAt : null;
+  useEffect(() => {
+    if (!receiptDueAt) return;
+    const t = setTimeout(() => void refresh(), Math.max(0, Date.parse(receiptDueAt) - Date.now()) + 300);
+    return () => clearTimeout(t);
+  }, [receiptDueAt, refresh]);
+
   // Opening state of the conversation, written by code from the data (not by the model).
   useEffect(() => {
     if (!overview || greeted.current) return;
@@ -177,14 +185,14 @@ export function StationProvider({ children }: { children: ReactNode }) {
             if (progressShown) markItem(progressId, { state: 'done' } as Partial<ChatItem>);
             const role = reply.action === 'escalate' ? 'system' : 'nastra';
             push({ id: uid('r'), at: nowIso(), role, kind: 'reply', reply });
-            if (reply.action === 'escalate') {
+            if (reply.action === 'escalate' && !reply.followup) {
               push({ id: uid('ev'), at: nowIso(), role: 'system', kind: 'event', tone: 'safety', text: `Event escalated · ${reply.protocol?.code ?? 'PRT-SY-01'} · ${reply.alert?.delivered ? 'flight surgeon alerted' : 'alert NOT delivered — use the voice loop'}` });
             } else if (reply.stage === 'assess') {
               push({ id: uid('ev'), at: nowIso(), role: 'system', kind: 'event', text: `Assessment logged in history · ${reply.protocol?.code ?? ''} · recheck in ${reply.recheckMinutes ?? '—'} min` });
             } else if (reply.stage === 'intake' && !eventId) {
               push({ id: uid('ev'), at: nowIso(), role: 'system', kind: 'event', text: `New ${reply.protocol?.title.toLowerCase() ?? 'health'} event opened · ${reply.protocol?.code ?? ''}` });
             }
-            setEventId(reply.eventStatus === 'awaiting_followup' || reply.eventStatus === 'open' ? reply.eventId ?? undefined : undefined);
+            setEventId(reply.eventStatus === 'awaiting_followup' || reply.eventStatus === 'open' || reply.eventStatus === 'escalated' ? reply.eventId ?? undefined : undefined);
           } else if (msg.type === 'error') {
             throw new Error(msg.message);
           }

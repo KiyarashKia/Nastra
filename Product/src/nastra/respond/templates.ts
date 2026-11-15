@@ -40,3 +40,13 @@ export const GUIDANCE: Record<string, string[]> = {
 export function recheckLine(minutes: number): string {
   return `I'll check in again in ${minutes} minutes. If anything gets worse, or you notice any of the warning signs I asked about, tell me right away.`;
 }
+
+/** Every non-emergency turn while an escalation is active: stay with it, never start over. */
+export const ESCALATION_FOLLOWUP = {
+  headline: 'Your escalation is still active.',
+  steps: [
+    'Stay in a stable, secured position and keep a crewmate with you.',
+    'Use the voice loop to talk to ground directly; it is faster than this console.',
+    'Tell me right away if breathing gets harder, you feel faint, or you have chest pain. I will alert again.',
+  ],
+};

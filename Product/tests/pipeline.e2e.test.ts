@@ -265,6 +265,24 @@ describe('pipeline — deterioration must reach the flight surgeon', () => {
     }
   });
 
+  it('after an escalation, the next turn stays with it instead of starting over (user test 2026-11-15)', async () => {
+    const db = createPgliteDb(pg);
+    const esc = await handleMessage({ crewId: 'crew_02', text: "I can't breathe properly" }, { db, llm: fakeLlm([]), model: 'fake', asOf: T(30) });
+    expect(esc.action).toBe('escalate');
+    const alertsBefore = (await pg.query('select id from surgeon_alerts')).rows.length;
+    // Unclear text that used to get the generic "is this physical, emotional or data?" question.
+    const next = await handleMessage({ crewId: 'crew_02', eventId: esc.eventId!, text: 'what to do no' },
+      { db, llm: fakeLlm([interp({ speech_act: 'question', domain: 'out_of_scope', confidence: 'low', symptoms: [] })]), model: 'fake', asOf: T(31) });
+    expect(next.action).toBe('escalate');
+    expect(next.followup).toBe(true);
+    expect(next.eventId).toBe(esc.eventId);
+    expect(next.urgency).toBe('warning');
+    expect(next.explanation).toMatch(/Difficulty breathing/i);
+    expect(next.explanation).not.toMatch(/physically, how you're feeling emotionally/);
+    // No duplicate alert to the surgeon for a follow-up turn.
+    expect((await pg.query('select id from surgeon_alerts')).rows.length).toBe(alertsBefore);
+  });
+
   it('an unanswered warning-signs check escalates on the third turn, and urgency never drops', async () => {
     const db = createPgliteDb(pg);
     const sym = { symptoms: [{ said: 'tired and weak', category: 'fatigue', body_system: 'other' }] };

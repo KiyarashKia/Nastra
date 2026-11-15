@@ -1,3 +1,4 @@
+import { escalationFromAlert, type EscalationView } from './link';
 import type { Db } from '../db/types';
 import { PROTOCOLS, type Protocol } from '../protocols/registry';
 import type { EventState } from '../router';
@@ -224,21 +225,10 @@ async function patternFor(db: Db, gw: ToolGateway, crewId: string, asOf: string)
   };
 }
 
-export async function escalationState(db: Db, crewId: string, asOf: string) {
+export async function escalationState(db: Db, crewId: string, asOf: string): Promise<EscalationView> {
   const rows = await db.rpc<Record<string, unknown>>('surgeon_alert_feed', { p_include_acknowledged: true, p_limit: 20 });
   const mine = rows.filter((r) => r.crew_id === crewId && Date.parse(iso(r.created_at)) > Date.parse(asOf) - 24 * 3600_000);
-  const r = mine[0];
-  if (!r) return { state: 'draft' as const };
-  const state = r.status === 'pending' ? 'sent' : r.ground_note ? 'answered' : 'received';
-  return {
-    state: state as 'sent' | 'received' | 'answered',
-    alertId: String(r.id),
-    target: String(r.target ?? 'flight_surgeon'),
-    headline: (r.headline as string) ?? null,
-    sentAt: iso(r.created_at),
-    receivedAt: r.acknowledged_at ? iso(r.acknowledged_at) : null,
-    reply: (r.ground_note as string) ?? null,
-  };
+  return escalationFromAlert(mine[0], asOf);
 }
 
 async function openEventFor(db: Db, crewId: string, asOf: string) {

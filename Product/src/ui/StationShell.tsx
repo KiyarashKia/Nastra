@@ -53,7 +53,7 @@ function ShellInner({ children }: { children: ReactNode }) {
             clocks={[{ iso: now, system: 'UTC' }, { iso: now, system: 'MET', missionEpochIso: status.profile.launchAt }]}
             link={{ state: 'connected', delayLabel: status.linkDelayLabel }}
             alerts={alerts}
-            escalation={{ state: esc?.state ?? 'draft', onEscalate: () => setEscalationOpen(true) }}
+            escalation={{ state: esc?.state ?? 'draft', recipient: esc && esc.state !== 'draft' ? esc.target : 'flight_surgeon', onEscalate: () => setEscalationOpen(true) }}
             onOpenAlerts={() => router.push('/history?view=alerts')}
           />
         ) : (
@@ -79,7 +79,7 @@ function ShellInner({ children }: { children: ReactNode }) {
 
         <footer className="st-footer">
           {mode !== 'live' && <span className="st-footer__sim">Simulated data — not live</span>}
-          <span>
+          <span title="Knowledge: NASA HRP Risks of Human Spaceflight (6 risk pages) · Data model after NASA Standard Measures and CSA Bio-Monitor channels · Logging after NASA-STD-3001 Vol. 1">
             Knowledge: NASA HRP Risks of Human Spaceflight (6 risk pages) · Data model after NASA Standard Measures and CSA Bio-Monitor channels · Logging after NASA-STD-3001 Vol. 1
           </span>
           {status && (
@@ -153,6 +153,7 @@ function EscalationPanel({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
           )}
           <EscalationStatus
             state={state}
+            recipient={esc && esc.state !== 'draft' && !sending && !err ? esc.target : target}
             priority={overview?.alerts.some((a) => a.priority === 'warning' && a.active) ? 'high' : 'routine'}
             package={{
               summary: eventId ? 'Open health event with its full conversation' : overview?.status.sentence ?? 'Current health status',
@@ -168,6 +169,7 @@ function EscalationPanel({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
             onSend={() => void doSend()}
             onRetry={() => void doSend()}
           />
+          {esc && esc.state === 'received' && esc.receiptSimulated && <p className="st-hint">Receipt simulated: one link round trip after sending ({status?.linkDelayLabel ?? 'RTT'}). A real acknowledgement from the ground console replaces it.</p>}
           {err && <p className="st-dialog-text" role="alert">Not sent: {err}. Use the voice loop if this is urgent.</p>}
           <div className="nhis-dialog__actions">
             <Button intent="quiet" onPress={onClose}>Close</Button>

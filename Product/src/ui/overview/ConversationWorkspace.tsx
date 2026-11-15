@@ -248,7 +248,7 @@ function SafetyEvent({ reply }: { reply: NastraReply }) {
       <ol className="st-safety__steps">{reply.steps.map((s) => <li key={s}>{s}</li>)}</ol>
       <p className="st-safety__meta">
         Deterministic safety rule · model not used for this decision · {reply.protocol?.code} {reply.protocol?.title}
-        {reply.alert && (reply.alert.delivered ? ' · flight surgeon alert sent' : ' · ALERT NOT DELIVERED — use the voice loop')}
+        {reply.followup ? ' · same escalated event, no new alert sent' : reply.alert && (reply.alert.delivered ? ' · flight surgeon alert sent' : ' · ALERT NOT DELIVERED — use the voice loop')}
       </p>
       <Button size="compact" intent="secondary" icon="list" onPress={() => router.push('/protocol')}>Open protocol {reply.protocol?.code}</Button>
     </section>

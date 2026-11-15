@@ -44,6 +44,8 @@ export function recheckLine(minutes: number): string {
 /** Every non-emergency turn while an escalation is active: stay with it, never start over. */
 export const ESCALATION_FOLLOWUP = {
   headline: 'Your escalation is still active.',
+  /** Used only when the model reply fails validation twice. */
+  fallback: "I'm still with you and I've added this to your open event.",
   steps: [
     'Stay in a stable, secured position and keep a crewmate with you.',
     'Use the voice loop to talk to ground directly; it is faster than this console.',

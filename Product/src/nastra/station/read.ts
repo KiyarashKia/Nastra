@@ -170,7 +170,7 @@ function vitalTile(key: string, label: string, unit: string, decimals: number, v
   const latestValue = recent.length ? round1(recent[recent.length - 1]) : undefined;
   const flagged = alerts.some((a) => a.metric === key && a.active) || (m?.z !== null && m?.z !== undefined && Math.abs(m.z) >= MONITOR_Z);
   return {
-    key, label, unit, decimals, value: m ? round1(m.recent) : latestValue, samples, baseline,
+    key, label, unit, decimals, value: m && Number.isFinite(m.recent) ? round1(m.recent) : latestValue, samples, baseline,
     status: flagged ? 'advisory' : 'nominal', quality: m || latestValue !== undefined ? qualityFor(ageMs) : 'unavailable', origin: 'measured', ageMs, trend,
   };
 }

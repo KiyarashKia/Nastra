@@ -1,8 +1,9 @@
 'use client';
 import { useSearchParams } from 'next/navigation';
 import { Suspense, useMemo, useState } from 'react';
-import { AlertList, Disclosure, EvidenceTag, Tab, TabList, Tabs, Time } from '@nastra/nhis';
+import { AlertList, Disclosure, EvidenceTag, Tab, TabList, TabPanel, Tabs, Time } from '@nastra/nhis';
 import type { getHistory } from '@/nastra/station/read';
+import { Stamp } from '../Stamp';
 import { useApi } from '../useApi';
 import { toNhisAlert } from '../station-context';
 
@@ -23,11 +24,12 @@ function Inner() {
   if (!data) return <p className="st-empty" role="status">{error ? `History unavailable: ${error}` : 'Loading…'}</p>;
 
   return (
-    <div className="st-page">
+    <div className="st-page st-page--fill">
       <h1 className="st-page__title">History <span className="st-card__sub">your health record as NASTRA holds it</span></h1>
       <Tabs selectedKey={view} onSelectionChange={(k) => setView(String(k))}>
         <TabList aria-label="History view">{VIEWS.map(([id, t]) => <Tab key={id} id={id}>{t}</Tab>)}</TabList>
-      </Tabs>
+      <TabPanel id={view}>
+      <div className="st-fill" role="region" aria-label="History records" tabIndex={0}>
 
       {view === 'events' && (
         <>
@@ -41,8 +43,8 @@ function Inner() {
             {events.map((e) => (
               <li key={e.id} className="st-event-row">
                 <div className="st-event-row__head">
-                  <Time value={{ iso: e.at, system: 'UTC' }} seconds={false} />
-                  <strong>{e.title || 'Untitled event'}</strong>
+                  <Stamp iso={e.at} />
+                  <h2 className="st-event-row__title">{e.title || 'Untitled event'}</h2>
                   <span className="st-tag">{e.origin === 'live' ? 'Recorded' : 'Simulated history'}</span>
                   {e.protocol && <span className="st-tag">{e.protocol.code}</span>}
                   <span className="st-tag">{e.status.replace('_', ' ')}</span>
@@ -66,7 +68,7 @@ function Inner() {
             <section key={g.label} className="st-card">
               <h2 className="st-card__title"><EvidenceTag category="derived" /> {g.label} <span className="st-card__sub">{g.count} events</span></h2>
               <ul className="st-events">
-                {data.events.filter((e) => g.eventIds.includes(e.id)).map((e) => <li key={e.id} className="st-hint"><Time value={{ iso: e.at, system: 'UTC' }} seconds={false} /> · {e.title}{e.outcome ? ` · ${e.outcome.replace(/_/g, ' ')}` : ''}</li>)}
+                {data.events.filter((e) => g.eventIds.includes(e.id)).map((e) => <li key={e.id} className="st-hint"><Stamp iso={e.at} /> · {e.title}{e.outcome ? ` · ${e.outcome.replace(/_/g, ' ')}` : ''}</li>)}
               </ul>
               <p className="st-hint">{g.note}</p>
             </section>
@@ -87,6 +89,9 @@ function Inner() {
       )}
 
       {view === 'alerts' && (data.alerts.length ? <AlertList alerts={data.alerts.map(toNhisAlert)} /> : <p className="st-empty">No alerts recorded.</p>)}
+      </div>
+      </TabPanel>
+      </Tabs>
     </div>
   );
 }

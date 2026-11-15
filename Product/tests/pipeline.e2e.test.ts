@@ -277,10 +277,29 @@ describe('pipeline — deterioration must reach the flight surgeon', () => {
     expect(next.followup).toBe(true);
     expect(next.eventId).toBe(esc.eventId);
     expect(next.urgency).toBe('warning');
-    expect(next.explanation).toMatch(/Difficulty breathing/i);
     expect(next.explanation).not.toMatch(/physically, how you're feeling emotionally/);
+    // Status is a small indicator; the approved steps appear because they asked what to do.
+    expect(next.escalation?.reason).toMatch(/breathing/i);
+    expect(next.steps.length).toBeGreaterThan(0);
     // No duplicate alert to the surgeon for a follow-up turn.
     expect((await pg.query('select id from surgeon_alerts')).rows.length).toBe(alertsBefore);
+  });
+
+  it('inside an escalation NASTRA stays conversational and keeps the thread (user test 2026-11-15)', async () => {
+    const db = createPgliteDb(pg);
+    const esc = await handleMessage({ crewId: 'crew_02', text: "I can't breathe properly" }, { db, llm: fakeLlm([]), model: 'fake', asOf: T(40) });
+    const llm = fakeLlm([interp({ speech_act: 'report', domain: 'psychological', symptoms: [] })],
+      JSON.stringify({ explanation: "That sounds frightening. You're not alone in this, and I've added how you feel to your open event.", cited: [] }));
+    const r = await handleMessage({ crewId: 'crew_02', eventId: esc.eventId!, text: "I'm scared, is anyone coming" }, { db, llm, model: 'fake', asOf: T(41) });
+    expect(r.followup).toBe(true);
+    expect(r.explanationSource).toBe('model');
+    expect(r.explanation).toMatch(/not alone/);
+    expect(r.explanation).not.toMatch(/still active/i);       // no repeated banner text
+    expect(r.steps).toHaveLength(0);                           // steps only when asked
+    // The model saw the escalation and the earlier conversation.
+    const prompt = String(llm.calls.at(-1)!.messages.at(-1)!.content);
+    expect(prompt).toMatch(/<situation>Escalated to the flight surgeon because: .*breath/i);
+    expect(prompt).toMatch(/<conversation>[\s\S]*can't breathe properly/i);
   });
 
   it('an unanswered warning-signs check escalates on the third turn, and urgency never drops', async () => {

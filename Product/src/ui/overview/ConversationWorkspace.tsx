@@ -3,7 +3,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { FileTrigger } from 'react-aria-components';
 import {
-  AIAssessment, AIDisclosure, Button, CheckIn, ChoiceGroup, Disclosure, EvidenceTag, ExtractionReview, Glyph, PriorityBadge, TextField, Time,
+  AIAssessment, AIDisclosure, Button, CheckIn, ChoiceGroup, Disclosure, EvidenceTag, Glyph, PriorityBadge, TextField, Time,
 } from '@nastra/nhis';
 import type { NastraReply } from '@/nastra/pipeline';
 import { useStation, type ChatItem } from '../station-context';
@@ -33,7 +33,7 @@ export function ConversationWorkspace() {
 
   return (
     <section className="nhis-conversation st-conversation" aria-label="Conversation with NASTRA">
-      <div className="nhis-conversation__log st-conversation__log" ref={logRef} role="log" aria-live="polite" aria-relevant="additions">
+      <div className="nhis-conversation__log st-conversation__log" ref={logRef} role="log" aria-live="polite" aria-relevant="additions" aria-label="Conversation log" tabIndex={0}>
         {chat.map((m) => (
           <div key={m.id} data-message-id={m.id} className={`nhis-message nhis-message--${m.role} st-msg st-msg--${m.kind}`}>
             {m.kind !== 'event' && (
@@ -56,7 +56,7 @@ export function ConversationWorkspace() {
           ))}
         </div>
       )}
-      <Composer busy={busy} onStop={stop} onSend={(t) => void send(t)} composer={composer} onImage={(item) => push(item)} />
+      <Composer busy={busy} onStop={stop} onSend={(t, extra) => void send(t, extra)} composer={composer} />
     </section>
   );
 }
@@ -67,7 +67,14 @@ function MessageBody({ item }: { item: ChatItem }) {
     case 'text':
       return (
         <>
-          <p className="st-text">{item.text}</p>
+          {'image' in item && item.image && (
+            <figure className="st-attach">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={item.image.url} alt={`Photo you attached: ${item.image.name}`} />
+              {item.scan && <figcaption className="st-attach__scan">{item.scan}</figcaption>}
+            </figure>
+          )}
+          {item.text && <p className="st-text">{item.text}</p>}
           {'action' in item && item.action?.run === 'checkin' && (
             <Button size="compact" intent="secondary" onPress={() => push({ id: `ci-${Date.now()}`, at: new Date().toISOString(), role: 'system', kind: 'checkin' })}>
               {item.action.label}
@@ -85,8 +92,6 @@ function MessageBody({ item }: { item: ChatItem }) {
       return <AnalysisProgress item={item} />;
     case 'checkin':
       return <DailyCheckIn item={item} />;
-    case 'extraction':
-      return <ExtractionItem item={item} onDone={(done) => markItem(item.id, { done } as Partial<ChatItem>)} />;
     case 'reply':
       return <ReplyBody item={item} />;
   }
@@ -95,6 +100,7 @@ function MessageBody({ item }: { item: ChatItem }) {
 /* ── Replies ────────────────────────────────────────────────────────────── */
 function ReplyBody({ item }: { item: Extract<ChatItem, { kind: 'reply' }> }) {
   const r = item.reply;
+  if (r.action === 'escalate' && r.followup) return <EscalationFollowup reply={r} />;
   if (r.action === 'escalate') return <SafetyEvent reply={r} />;
   if (r.action === 'protocol' && r.stage === 'intake') return <StructuredIntake item={item} />;
   if (r.action === 'protocol' && r.stage === 'readback') return <ReadbackConfirmation item={item} />;
@@ -236,6 +242,17 @@ function AssessmentBlock({ reply }: { reply: NastraReply }) {
 }
 
 /** System safety event: deterministic, visually distinct from AI output. */
+/** A turn inside an active escalation: a normal conversational reply, with a small status line. */
+function EscalationFollowup({ reply }: { reply: NastraReply }) {
+  return (
+    <>
+      <p className="st-esc-chip" role="note"><PriorityBadge priority="warning" /> <span>{reply.escalation?.status ?? 'Escalation active'}</span></p>
+      <p className="st-text">{reply.explanation}</p>
+      {reply.steps.length > 0 && <ol className="st-safety__steps">{reply.steps.map((s) => <li key={s}>{s}</li>)}</ol>}
+    </>
+  );
+}
+
 function SafetyEvent({ reply }: { reply: NastraReply }) {
   const router = useRouter();
   return (
@@ -291,36 +308,80 @@ function DailyCheckIn({ item }: { item: Extract<ChatItem, { kind: 'checkin' }> }
   );
 }
 
-function ExtractionItem({ item, onDone }: { item: Extract<ChatItem, { kind: 'extraction' }>; onDone: (d: 'confirmed' | 'discarded') => void }) {
-  const { send } = useStation();
-  if (item.done === 'discarded') return <p className="st-hint">Discarded. Nothing was saved.</p>;
-  if (item.done === 'confirmed') return <p className="st-hint">Confirmed and shared with NASTRA as self-entered readings.</p>;
-  if (!item.fields.length) return <p className="st-text">NASTRA could not read any device values in that image. Nothing was saved.</p>;
+/* ── Composer ───────────────────────────────────────────────────────────── */
+type Reading = {
+  kind: 'device' | 'person' | 'other'; source: string; quality: string | null; description: string | null; unremarkable: boolean | null;
+  fields: { id: string; label: string; value: string; unit?: string; note?: string }[];
+  observations: { id: string; text: string; region: string | null; unclear: boolean }[];
+};
+type Attachment = { url: string; name: string; state: 'scanning' | 'ready' | 'failed'; reading?: Reading; keep: Record<string, boolean>; error?: string };
+
+/** What the photo contributes to the message, in words the pipeline reads. Only items the crew kept. */
+function scanText(a: Attachment): { line: string; caption: string } {
+  const r = a.reading;
+  if (!r) return { line: '', caption: 'Visual scan unavailable' };
+  if (r.kind === 'person') {
+    const kept = r.observations.filter((o) => a.keep[o.id]);
+    if (kept.length) return { line: `From my photo (model-read, I checked): ${kept.map((o) => (o.region ? `${o.region}: ${o.text}` : o.text)).join('; ')}.`, caption: `Visual scan · ${kept.length} observation${kept.length > 1 ? 's' : ''} shared` };
+    return r.unremarkable ? { line: 'From my photo (model-read, I checked): nothing stands out.', caption: 'Visual scan · no visible anomalies' } : { line: '', caption: 'Visual scan · nothing shared' };
+  }
+  if (r.kind === 'device') {
+    const kept = r.fields.filter((f) => a.keep[f.id]);
+    if (kept.length) return { line: `Device readings I confirmed (read from my photo of ${r.source}): ${kept.map((f) => `${f.label} ${f.value}${f.unit ? ' ' + f.unit : ''}`).join(', ')}.`, caption: `Visual scan · ${kept.length} device reading${kept.length > 1 ? 's' : ''} shared` };
+    return { line: '', caption: 'Visual scan · no readings shared' };
+  }
+  return { line: '', caption: 'Visual scan · no device or person in frame' };
+}
+
+/** Attached photo inside the composer: a compact visual-scan readout. The crew keeps or drops each item; nothing is used until they send. */
+function ScanChip({ a, onToggle, onRemove }: { a: Attachment; onToggle: (id: string) => void; onRemove: () => void }) {
+  const r = a.reading;
+  const items = r?.kind === 'person' ? r.observations.map((o) => ({ id: o.id, text: o.region ? `${o.region} · ${o.text}` : o.text, unclear: o.unclear }))
+    : r?.kind === 'device' ? r.fields.map((f) => ({ id: f.id, text: `${f.label} · ${f.value}${f.unit ? ' ' + f.unit : ''}`, unclear: f.note === 'unclear' })) : [];
+  const status = a.state === 'scanning' ? 'Scanning…'
+    : a.state === 'failed' ? 'Unavailable'
+    : r?.kind === 'person' ? (items.length ? `Subject · ${items.length} visible sign${items.length > 1 ? 's' : ''}` : r.unremarkable ? 'Subject · no visible anomalies' : 'Subject · not readable')
+    : r?.kind === 'device' ? (items.length ? `Device · ${items.length} reading${items.length > 1 ? 's' : ''}` : 'Device · no legible readings')
+    : 'No device or person in frame';
   return (
-    <ExtractionReview
-      source={item.source}
-      fields={item.fields}
-      onDiscard={() => onDone('discarded')}
-      onConfirm={(values) => {
-        const text = 'Device readings I confirmed: ' + item.fields.map((f) => `${f.label} ${values[f.id] ?? f.value}${f.unit ? ' ' + f.unit : ''}`).join(', ');
-        onDone('confirmed');
-        void send(text);
-      }}
-    />
+    <div className={`st-scan is-${a.state}`} role="group" aria-label={`Attached photo ${a.name}`}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img className="st-scan__thumb" src={a.url} alt="" />
+      <div className="st-scan__body">
+        <p className="st-scan__head"><span className="st-scan__label">Visual scan</span><span className="st-scan__status" role="status">{status}</span></p>
+        {items.length > 0 && (
+          <ul className="st-scan__list">
+            {items.map((i) => (
+              <li key={i.id}>
+                <label className="st-check">
+                  <input type="checkbox" checked={!!a.keep[i.id]} onChange={() => onToggle(i.id)} />
+                  <span>{i.text}{i.unclear && <span className="st-scan__meta"> · unclear</span>}</span>
+                </label>
+              </li>
+            ))}
+          </ul>
+        )}
+        <p className="st-scan__meta">
+          {a.state === 'failed' ? (a.error ?? 'Describe what you see in words.')
+            : r?.kind === 'other' && r.description ? r.description
+            : 'Model-read · unverified · not a diagnosis'}
+          {r?.quality ? ` · ${r.quality}` : ''}
+        </p>
+      </div>
+      <Button iconOnly size="compact" intent="quiet" icon="close" aria-label={`Remove photo ${a.name}`} onPress={onRemove} />
+    </div>
   );
 }
 
-/* ── Composer ───────────────────────────────────────────────────────────── */
-function Composer({ busy, onStop, onSend, composer, onImage }: {
+function Composer({ busy, onStop, onSend, composer }: {
   busy: boolean;
   onStop: () => void;
-  onSend: (t: string) => void;
+  onSend: (t: string, extra?: { display?: string; image?: { url: string; name: string }; scan?: string }) => void;
   composer: ReturnType<typeof useStation>['composer'];
-  onImage: (item: ChatItem) => void;
 }) {
   const { draft, setDraft, focusToken } = composer;
   const formRef = useRef<HTMLFormElement>(null);
-  const [reading, setReading] = useState(false);
+  const [att, setAtt] = useState<Attachment | null>(null);
   const voice = useVoiceInput((text) => setDraft(draft ? `${draft} ${text}` : text));
 
   useEffect(() => {
@@ -330,26 +391,37 @@ function Composer({ busy, onStop, onSend, composer, onImage }: {
     ta?.setSelectionRange(ta.value.length, ta.value.length);
   }, [focusToken]);
 
+  const canSend = !busy && att?.state !== 'scanning' && (!!draft.trim() || !!att);
   const submit = () => {
+    if (!canSend) return;
     const t = draft.trim();
-    if (!t || busy) return;
-    onSend(t);
+    if (att) {
+      const { line, caption } = scanText(att);
+      const text = [t, line].filter(Boolean).join(' ') || `I'm sharing a photo${att.reading?.kind === 'other' && att.reading.description ? ` (${att.reading.description})` : ''}.`;
+      onSend(text, { display: t, image: { url: att.url, name: att.name }, scan: caption });
+      setAtt(null);
+    } else {
+      onSend(t);
+    }
     setDraft('');
   };
 
   const readImage = async (file: File) => {
-    setReading(true);
+    const url = URL.createObjectURL(file);
+    setAtt({ url, name: file.name, state: 'scanning', keep: {} });
+    composer.focus();
     try {
       const dataUrl = await new Promise<string>((res, rej) => { const fr = new FileReader(); fr.onload = () => res(String(fr.result)); fr.onerror = rej; fr.readAsDataURL(file); });
       const r = await fetch('/api/extract', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ image: dataUrl, name: file.name }) });
       const data = await r.json();
-      onImage({ id: `img-${Date.now()}`, at: new Date().toISOString(), role: 'crew', kind: 'text', text: `Attached image: ${file.name}` });
       if (!r.ok) throw new Error(data.error ?? `HTTP ${r.status}`);
-      onImage({ id: `ex-${Date.now()}`, at: new Date().toISOString(), role: 'nastra', kind: 'extraction', source: data.source, fields: data.fields });
+      const reading = { observations: [], fields: [], ...data } as Reading;
+      const keep = Object.fromEntries([...reading.observations.map((o) => [o.id, !o.unclear]), ...reading.fields.map((f) => [f.id, f.note !== 'unclear'])]);
+      setAtt((a) => (a && a.url === url ? { ...a, state: 'ready', reading, keep } : a));
     } catch (e) {
-      onImage({ id: `ex-${Date.now()}`, at: new Date().toISOString(), role: 'system', kind: 'text', text: `Image could not be read (${(e as Error).message.slice(0, 100)}). Nothing was saved.` });
-    } finally {
-      setReading(false);
+      const msg = (e as Error).message;
+      const error = /too large/.test(msg) ? 'Too large to scan (max about 6 MB).' : 'Scan service not reachable. Describe what you see in words.';
+      setAtt((a) => (a && a.url === url ? { ...a, state: 'failed', error } : a));
     }
   };
 
@@ -357,7 +429,8 @@ function Composer({ busy, onStop, onSend, composer, onImage }: {
   return (
     <form ref={formRef} className="nhis-conversation__composer st-composer" onSubmit={(e) => { e.preventDefault(); submit(); }}
       onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey && (e.target as HTMLElement).tagName === 'TEXTAREA') { e.preventDefault(); submit(); } }}>
-      <TextField label="Message NASTRA" value={draft} onChange={setDraft} multiline placeholder="Ask NASTRA about your health, report a symptom, or request your data…" />
+      {att && <ScanChip a={att} onToggle={(id) => setAtt((x) => (x ? { ...x, keep: { ...x.keep, [id]: !x.keep[id] } } : x))} onRemove={() => setAtt(null)} />}
+      <TextField label="Message NASTRA" value={draft} onChange={setDraft} multiline placeholder={att ? 'Add how you feel, or press Enter to send the photo…' : 'Ask NASTRA about your health, report a symptom, or request your data…'} />
       <div className="nhis-conversation__composer-row st-composer__row">
         <AIDisclosure compact />
         <div className="st-composer__controls">
@@ -369,12 +442,12 @@ function Composer({ busy, onStop, onSend, composer, onImage }: {
           <Button iconOnly icon="mic" aria-label={voiceLabel} aria-pressed={voice.state === 'listening'} intent={voice.state === 'listening' ? 'primary' : 'secondary'}
             isPending={voice.state === 'recognizing'} isDisabled={busy} onPress={voice.toggle} />
           <FileTrigger acceptedFileTypes={['image/png', 'image/jpeg', 'image/webp']} onSelect={(l) => { const f = l?.[0]; if (f) void readImage(f); }}>
-            <Button iconOnly icon="image" aria-label="Add an image of a device screen or observation" isPending={reading} isDisabled={busy} />
+            <Button iconOnly icon="image" aria-label="Attach a photo: a device screen, or your face or skin" isPending={att?.state === 'scanning'} isDisabled={busy || !!att} />
           </FileTrigger>
           {busy ? (
             <Button intent="secondary" icon="close" onPress={onStop}>Stop</Button>
           ) : (
-            <Button type="submit" intent="primary" icon="send" isDisabled={!draft.trim()}>Send</Button>
+            <Button type="submit" intent="primary" icon="send" isDisabled={!canSend}>Send</Button>
           )}
         </div>
       </div>

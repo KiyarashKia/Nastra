@@ -1,8 +1,9 @@
 'use client';
 import { useState } from 'react';
-import { DataGapNotice, DataQualityTag, Tab, TabList, Tabs, TelemetryReadout, TrendChart } from '@nastra/nhis';
+import { DataGapNotice, DataQualityTag, Tab, TabList, TabPanel, Tabs, TelemetryReadout, TrendChart } from '@nastra/nhis';
 import type { getTelemetry } from '@/nastra/station/read';
 import { useApi } from '../useApi';
+import { useFitHeight } from '../useFitHeight';
 
 type T = Awaited<ReturnType<typeof getTelemetry>>;
 const GROUPS = ['Cardiovascular', 'Respiratory', 'Sleep and activity', 'Environment'] as const;
@@ -11,6 +12,7 @@ export function TelemetryPage() {
   const { data, error } = useApi<T>('/api/telemetry');
   const [group, setGroup] = useState<(typeof GROUPS)[number]>('Cardiovascular');
   const [metric, setMetric] = useState<string>('heart_rate_bpm');
+  const plot = useFitHeight<HTMLDivElement>(280, 160, [metric, group, !!data]);
   if (!data) return <p className="st-empty" role="status">{error ? `Telemetry unavailable: ${error}` : 'Loading…'}</p>;
 
   type Ch = { key: string; label: string; unit: string; decimals: number; samples: { t: string; v: number | null }[]; baseline?: { low: number; high: number; reference?: number; label: string }; quality: 'live' | 'delayed' | 'stale' | 'unavailable'; ageMs?: number; source: string; value?: number };
@@ -28,11 +30,11 @@ export function TelemetryPage() {
   const cur = list.find((c) => c.key === metric) ?? list[0];
 
   return (
-    <div className="st-page">
+    <div className="st-page st-page--fill">
       <h1 className="st-page__title">Telemetry <span className="st-card__sub">last {data.days} days · baselines are your own</span></h1>
       <Tabs selectedKey={group} onSelectionChange={(k) => { const g = String(k) as (typeof GROUPS)[number]; setGroup(g); setMetric(channels[g][0].key); }}>
         <TabList aria-label="Telemetry group">{GROUPS.map((g) => <Tab key={g} id={g}>{g}</Tab>)}</TabList>
-      </Tabs>
+      <TabPanel id={group}>
       <div className="st-telemetry">
         <nav className="st-metric-list" aria-label="Metrics">
           {list.map((c) => (
@@ -41,35 +43,43 @@ export function TelemetryPage() {
             </button>
           ))}
         </nav>
-        <section className="st-card st-chart" aria-label={cur.label}>
-          {cur.samples.some((s) => s.v !== null) ? (
-            <TrendChart title={cur.label} unit={cur.unit} samples={cur.samples} now={data.asOf} baseline={cur.baseline} decimals={cur.decimals} quality={cur.quality} fixtureLabel="Simulated data" height={300} />
-          ) : (
-            <DataGapNotice title={`${cur.label}: no data`} missing={[cur.label]} consequence="NASTRA cannot compare this channel until readings arrive." />
-          )}
+        <section className="st-card st-chart" aria-labelledby="st-chart-h">
+          <h2 id="st-chart-h" className="nhis-visually-hidden">{cur.label} trend</h2>
+          <div className="st-chart__plot" ref={plot.ref}>
+            {cur.samples.some((s) => s.v !== null) ? (
+              <TrendChart title={cur.label} unit={cur.unit} samples={cur.samples} now={data.asOf} baseline={cur.baseline} decimals={cur.decimals} quality={cur.quality} fixtureLabel="Simulated data" height={plot.height} width={plot.width} />
+            ) : (
+              <DataGapNotice title={`${cur.label}: no data`} missing={[cur.label]} consequence="NASTRA cannot compare this channel until readings arrive." />
+            )}
+          </div>
           <p className="st-hint">{cur.source}. Band: {cur.baseline?.label ?? 'no baseline yet'}. Bands are your own variation, not clinical limits.</p>
-          <div className="st-latest">
-            <h2 className="st-card__title">Latest readings</h2>
-            <table className="st-table">
-              <thead><tr><th>Time (UTC)</th><th>Value</th><th>Against your baseline</th><th>Quality</th></tr></thead>
+        </section>
+        <section className="st-card st-latest" aria-label="Latest readings">
+          <h2 className="st-card__title">Latest readings</h2>
+          <div className="st-scroll" role="region" aria-label={`Latest ${cur.label} readings`} tabIndex={0}>
+            <table className="st-table st-table--compact">
+              <thead><tr><th scope="col">UTC</th><th scope="col" className="is-num">Value</th><th scope="col">Band</th></tr></thead>
               <tbody>
-                {[...cur.samples].reverse().filter((s) => s.v !== null).slice(0, 6).map((s) => {
+                {[...cur.samples].reverse().filter((s) => s.v !== null).slice(0, 24).map((s) => {
                   const b = cur.baseline;
                   const v = s.v as number;
+                  const rel = !b ? 'No baseline' : v > b.high ? 'Above' : v < b.low ? 'Below' : 'Within';
                   return (
-                    <tr key={s.t}>
+                    <tr key={s.t} className={rel === 'Above' || rel === 'Below' ? 'is-out' : undefined}>
                       <td className="nhis-num">{new Date(s.t).toISOString().slice(5, 16).replace('T', ' ')}</td>
-                      <td className="nhis-num">{v.toFixed(cur.decimals)} {cur.unit}</td>
-                      <td>{!b ? 'No baseline' : v > b.high ? 'Above your band' : v < b.low ? 'Below your band' : 'Within your band'}</td>
-                      <td><DataQualityTag quality={cur.quality} origin="measured" ageMs={cur.ageMs} /></td>
+                      <td className="nhis-num is-num">{v.toFixed(cur.decimals)} {cur.unit}</td>
+                      <td>{rel}</td>
                     </tr>
                   );
                 })}
               </tbody>
             </table>
           </div>
+          <div className="st-latest__quality"><DataQualityTag quality={cur.quality} origin={cur.key === 'sleep' ? 'estimated' : 'measured'} ageMs={cur.ageMs} /></div>
         </section>
       </div>
+      </TabPanel>
+      </Tabs>
     </div>
   );
 }

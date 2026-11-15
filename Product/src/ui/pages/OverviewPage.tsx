@@ -1,6 +1,7 @@
 'use client';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { AlertBanner, AlertList, Button, Disclosure, DataGapNotice, PatternCard, StatusMark, Time, VitalTile } from '@nastra/nhis';
+import { AlertBanner, Button, PriorityBadge, Disclosure, DataGapNotice, PatternCard, StatusMark, Time, VitalTile } from '@nastra/nhis';
 import { ConversationWorkspace } from '../overview/ConversationWorkspace';
 import { toNhisAlert, useStation } from '../station-context';
 
@@ -57,7 +58,18 @@ export function OverviewPage() {
         ))}
         {active.length > 1 && (
           <Disclosure title={`${active.length - 1} more active alert${active.length > 2 ? 's' : ''}`}>
-            <AlertList alerts={active.slice(1).map(toNhisAlert)} onAcknowledge={(x) => void ackAlert(x.id)} onSuppress={(x) => void suppressAlert(x.id)} onOpenProtocol={() => router.push('/protocol')} />
+            {/* Compact list: the full alert table lives in History → Alerts. */}
+            <ul className="st-alert-mini" aria-label="More active alerts">
+              {active.slice(1).map((a) => (
+                <li key={a.id} className="st-alert-mini__row">
+                  <PriorityBadge priority={a.priority} />
+                  <span className="st-alert-mini__title">{a.title}</span>
+                  <Time value={{ iso: a.createdAt, system: 'UTC' }} seconds={false} />
+                  {!a.acknowledged && <Button size="compact" intent="quiet" onPress={() => void ackAlert(a.id)} aria-label={`Acknowledge: ${a.title}`}>Acknowledge</Button>}
+                </li>
+              ))}
+            </ul>
+            <Link className="st-link nhis-focus-ring" href="/history?view=alerts">All alerts in History</Link>
           </Disclosure>
         )}
 

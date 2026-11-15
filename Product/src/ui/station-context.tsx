@@ -18,13 +18,12 @@ export interface StationStatus {
 }
 
 export type ChatItem =
-  | { id: string; at: string; role: 'crew'; kind: 'text'; text: string }
+  | { id: string; at: string; role: 'crew'; kind: 'text'; text: string; image?: { url: string; name: string }; scan?: string }
   | { id: string; at: string; role: 'nastra' | 'system'; kind: 'text'; text: string; action?: { label: string; run: 'checkin' } }
   | { id: string; at: string; role: 'nastra' | 'system'; kind: 'reply'; reply: NastraReply; answered?: Record<string, string>; confirmed?: boolean }
   | { id: string; at: string; role: 'nastra'; kind: 'progress'; steps: ProgressEvent[]; state: 'running' | 'done' | 'stopped' | 'failed' }
   | { id: string; at: string; role: 'system'; kind: 'event'; text: string; tone?: 'safety' }
-  | { id: string; at: string; role: 'system'; kind: 'checkin'; done?: boolean }
-  | { id: string; at: string; role: 'nastra'; kind: 'extraction'; source: string; fields: { id: string; label: string; value: string; unit?: string; note?: string }[]; done?: 'confirmed' | 'discarded' };
+  | { id: string; at: string; role: 'system'; kind: 'checkin'; done?: boolean };
 
 interface StationApi {
   status: StationStatus | null;
@@ -34,7 +33,7 @@ interface StationApi {
   chat: ChatItem[];
   busy: boolean;
   eventId?: string;
-  send: (text: string, extra?: { answers?: Record<string, string>; confirm?: boolean; display?: string }) => Promise<void>;
+  send: (text: string, extra?: { answers?: Record<string, string>; confirm?: boolean; display?: string; image?: { url: string; name: string }; scan?: string }) => Promise<void>;
   stop: () => void;
   markItem: (id: string, patch: Partial<ChatItem>) => void;
   push: (item: ChatItem) => void;
@@ -93,7 +92,7 @@ export function StationProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     fetch('/api/status', { cache: 'no-store' }).then((r) => r.json()).then((s) => (s.error ? setError(s.error) : setStatus(s))).catch((e) => setError(String(e)));
     void refresh();
-    const t = setInterval(() => void refresh(), 20_000);
+    const t = setInterval(() => void refresh(), 10_000); // halved for the demo (was 20 s)
     return () => clearInterval(t);
   }, [refresh]);
 
@@ -147,7 +146,7 @@ export function StationProvider({ children }: { children: ReactNode }) {
     setBusy(true);
     const ac = new AbortController();
     abortRef.current = ac;
-    push({ id: uid('crew'), at: nowIso(), role: 'crew', kind: 'text', text: extra.display ?? text });
+    push({ id: uid('crew'), at: nowIso(), role: 'crew', kind: 'text', text: extra.display ?? text, image: extra.image, scan: extra.scan });
     const progressId = uid('prog');
     let progressShown = false;
     try {

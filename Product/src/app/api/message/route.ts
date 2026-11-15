@@ -1,5 +1,6 @@
 import { getDeps, now } from '@/server/deps';
 import { json } from '@/server/http';
+import { simTick } from '@/server/feed';
 import { handleMessage } from '@/nastra/pipeline';
 
 export const runtime = 'nodejs';
@@ -15,6 +16,7 @@ export async function POST(req: Request) {
   const body = (await req.json().catch(() => null)) as { text?: string; eventId?: string; answers?: Record<string, string>; confirm?: boolean } | null;
   if (!body || typeof body.text !== 'string' || !body.text.trim()) return json({ error: 'text is required' }, 400);
   const deps = await getDeps();
+  await simTick(deps, now());
   const enc = new TextEncoder();
   const stream = new ReadableStream({
     async start(controller) {

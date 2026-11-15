@@ -139,3 +139,67 @@ body { background: var(--nhis-color-surface-canvas); color: var(--nhis-color-tex
 .st-footer > span:not(.st-footer__sim):not(.st-footer__tech) { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .st-footer__tech, .st-footer__sim, .st-footer__demo { flex: none; }
 @media (max-height: 800px) { .st-tiles > .nhis-vital, .st-stress { padding: 8px 10px; gap: 2px; } }
+
+/* ── Single-screen pages: the page frame never scrolls; only named regions do. ───────────── */
+.st-main:has(.st-page--fill) { overflow: hidden; }
+.st-page--fill { height: 100%; min-height: 0; display: flex; flex-direction: column; gap: var(--nhis-space-stack); }
+.st-page--fill > * { flex: none; }
+.st-page--fill > .st-fill { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding-right: 4px; }
+.st-protocol.st-fill { overflow: hidden; align-items: stretch; padding-right: 0; }
+.st-protocol.st-fill > * { min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding-right: 4px; }
+
+/* Telemetry: metrics | chart | latest readings. The chart height is measured to fill its card. */
+.st-page--fill > .st-telemetry { flex: 1 1 auto; min-height: 0; grid-template-columns: minmax(220px, 280px) minmax(0, 1fr) minmax(250px, 320px); align-items: stretch; }
+.st-telemetry > * { min-height: 0; }
+.st-metric-list { overflow-y: auto; align-content: start; }
+.st-chart { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.st-chart__plot { flex: 1 1 auto; min-height: 0; overflow: hidden; }
+.st-chart > .st-hint { margin: 0; flex: none; }
+.st-latest { display: flex; flex-direction: column; min-width: 0; }
+.st-latest .st-scroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
+.st-latest__quality { flex: none; padding-top: 8px; }
+.st-table--compact th, .st-table--compact td { padding: 4px 6px; font: var(--nhis-type-meta-font); }
+.st-table--compact thead th { position: sticky; top: 0; background: var(--nhis-color-surface-panel); }
+.st-table .is-num { text-align: right; }
+.st-table tr.is-out td:last-child { color: var(--nhis-color-text-primary); font-weight: 600; }
+
+/* Overview: compact "more alerts" list (full table in History → Alerts). */
+.st-alert-mini { list-style: none; margin: 4px 0 8px; padding: 0; display: grid; gap: 6px; }
+.st-alert-mini__row { display: grid; grid-template-columns: auto 1fr auto; grid-template-areas: 'badge time ack' 'title title title'; align-items: center; gap: 4px 10px; padding: 6px 0; border-bottom: var(--nhis-border-hairline) solid var(--nhis-color-border-subtle); font: var(--nhis-type-meta-font); }
+.st-alert-mini__title { grid-area: title; min-width: 0; color: var(--nhis-color-text-primary); font: var(--nhis-type-body-font); }
+.st-alert-mini__row > .nhis-badge { grid-area: badge; }
+.st-alert-mini__row > .nhis-time { grid-area: time; color: var(--nhis-color-text-muted); }
+.st-alert-mini__row > .nhis-button { grid-area: ack; }
+.st-link { color: var(--nhis-color-text-secondary); font: var(--nhis-type-meta-font); text-decoration: underline; text-underline-offset: 3px; }
+.st-link:hover { color: var(--nhis-color-text-primary); }
+
+/* Tabs own their panel (WAI-ARIA: aria-controls must resolve). The panel fills the page. */
+.st-page--fill > .nhis-tabs { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+.st-page--fill .nhis-tabpanel { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+.st-page--fill .nhis-tabpanel > .st-telemetry, .st-page--fill .nhis-tabpanel > .st-fill { flex: 1 1 auto; min-height: 0; }
+.st-page--fill .nhis-tabpanel > .st-fill { overflow-y: auto; overscroll-behavior: contain; padding-right: 4px; }
+.st-page--fill .nhis-tabpanel > .st-telemetry { display: grid; grid-template-columns: minmax(220px, 280px) minmax(0, 1fr) minmax(250px, 320px); gap: var(--nhis-space-gutter); align-items: stretch; }
+.st-event-row__title { margin: 0; font: var(--nhis-type-label-font); font-weight: 600; }
+.st-link { display: inline-flex; align-items: center; min-height: 24px; }
+.st-scroll:focus-visible, .st-fill:focus-visible, .st-conversation__log:focus-visible { outline: 2px solid var(--nhis-color-border-focus); outline-offset: 2px; }
+@media (max-height: 760px) {
+  .st-tiles .nhis-vital__delta-ref { display: none; }
+  .st-overview__side .st-card .st-next { display: none; }
+}
+.st-table--compact th { letter-spacing: 0.06em; }
+@media (max-height: 760px) {
+  /* Safety caveat beats metadata: the pattern's "not causation" note must stay visible. */
+  .st-overview__side .nhis-pattern__head { display: none; }
+  .st-overview__side .nhis-pattern { padding-top: 10px; padding-bottom: 10px; }
+  .st-overview__side .nhis-alert-banner__detail { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+}
+
+/* Photo observations (model-read, crew-confirmed) */
+.st-photo { border: var(--nhis-border-hairline) solid var(--nhis-color-border-control); border-radius: var(--nhis-radius-panel); padding: 12px 14px; display: grid; gap: 8px; }
+.st-photo__head { display: flex; align-items: center; gap: 10px; }
+.st-photo__list { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.st-photo__region { font: var(--nhis-type-meta-font); color: var(--nhis-color-text-secondary); margin-right: 8px; text-transform: uppercase; letter-spacing: 0.08em; font-family: var(--nhis-font-family-mono); }
+.st-photo__actions { display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
+.st-photo .st-hint { margin: 0; }
+.st-check { display: flex; align-items: flex-start; gap: 10px; min-height: 24px; padding: 4px 0; cursor: pointer; }
+.st-check input { width: 18px; height: 18px; margin: 2px 0 0; accent-color: var(--nhis-color-text-primary); flex: none; }

@@ -36,6 +36,8 @@ export interface NastraReply {
   steps: string[];
   /** True when this turn continued an already-active escalation (no new alert was sent). */
   followup?: boolean;
+  /** Present while an escalation is active: a small indicator, not a repeated banner. */
+  escalation?: { status: string; reason: string };
   /** Set on every escalation. delivered=false means the alert could not be written: the crew must use voice. */
   alert?: { id: string | null; delivered: boolean; error?: string };
   recheckMinutes?: number;
@@ -114,22 +116,38 @@ export async function handleMessage(raw: RawInput, deps: PipelineDeps): Promise<
   if (a.kind !== 'escalate' && a.kind !== 'answer_data' && a.kind !== 'log') {
     const esc = await activeEscalation(deps.db, asOf, env.eventId).catch(() => null);
     if (esc) {
-      const status = receiptLine(await escalationState(deps.db, env.crewId, asOf).catch(() => ({ state: 'draft' as const })));
+      const view = await escalationState(deps.db, env.crewId, asOf).catch(() => ({ state: 'draft' as const }));
+      const status = receiptLine(view as Parameters<typeof receiptLine>[0]);
       const reason = String(esc.ai_summary ?? '').replace(/^Escalated:\s*/, '') || 'red-flag symptom';
-      const replyText = [ESCALATION_FOLLOWUP.headline, status, ...ESCALATION_FOLLOWUP.steps].join(' ');
+      // Stay conversational: the model answers what they actually said, with the escalation and the
+      // recent conversation in context. Status lives in a small indicator, not in every reply.
+      const gw = new ToolGateway(deps.db, { crewId: env.crewId, asOf, allowed: ALL_TOOLS });
+      const [vitals, mission] = await Promise.all([gw.vitalsNow().catch(() => undefined), gw.missionContext().catch(() => undefined)]);
+      const evidence = buildEvidence({ vitals, mission });
+      const transcript = await deps.db.rpc<{ ts: string; role: string; content: string }>('event_transcript', { p_event_id: esc.id }).catch(() => []);
+      const conversation = transcript.slice(-10).map((t) => `${t.role === 'crew' ? 'Crew' : 'NASTRA'}: ${t.content}`).join('\n');
+      const ex = await explain(deps.llm, {
+        model: deps.respondModel ?? deps.model, utterance: env.utterance, stage: 'escalated', evidence,
+        situation: `Escalated to the flight surgeon because: ${reason}. Alert status: ${status}`, conversation,
+      });
+      const text = ex.source === 'model' ? ex.text : ESCALATION_FOLLOWUP.fallback;
+      // Approved safety steps only when they ask what to do, or the message was unclear.
+      const wantsSteps = a.kind === 'clarify' || /\b(what (do|should|can) i|what now|now what|what next|next step|help me|what to do)\b/i.test(env.utterance);
+      const steps = wantsSteps ? [...ESCALATION_FOLLOWUP.steps] : [];
       await deps.db.insert('event_turns', {
         event_id: esc.id, ts: asOf, role: 'crew', content: env.utterance,
         payload: { safety: u.screen, interpretation: u.interpretation?.interpretation ?? null, routed_as: a.kind },
       }).catch(() => undefined);
       await deps.db.insert('event_turns', {
-        event_id: esc.id, ts: new Date(Date.parse(asOf) + 1).toISOString(), role: 'nastra', content: replyText,
-        payload: { action: 'escalation_followup', urgency: 'warning' },
+        event_id: esc.id, ts: new Date(Date.parse(asOf) + 1).toISOString(), role: 'nastra', content: [text, ...steps].join(' '),
+        payload: { action: 'escalation_followup', urgency: 'warning', explanation_source: ex.source },
       }).catch(() => undefined);
       return {
         ...base, urgency: 'warning', eventId: String(esc.id), eventStatus: 'escalated', action: 'escalate', followup: true,
-        protocol: protoInfo(PROTOCOLS.red_flag_response), headline: ESCALATION_FOLLOWUP.headline, steps: [...ESCALATION_FOLLOWUP.steps],
-        explanation: `Reason: ${reason}. ${status}`, explanationSource: 'fallback',
-        timings: { interpretMs, explainMs: 0, totalMs: Date.now() - started },
+        protocol: protoInfo(PROTOCOLS.red_flag_response), steps, evidence,
+        escalation: { status, reason },
+        explanation: text, explanationSource: ex.source === 'model' ? 'model' : 'fallback', explanationIssues: ex.violationsSeen,
+        timings: { interpretMs, explainMs: ex.latencyMs, totalMs: Date.now() - started },
       };
     }
   }

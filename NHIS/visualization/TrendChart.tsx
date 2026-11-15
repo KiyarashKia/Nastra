@@ -27,11 +27,13 @@ export interface TrendChartProps {
   timeSystem?: TimeSystem;
   missionEpochIso?: string;
   height?: number;
+  /** Drawing width in px. Pass the container width so the chart renders 1:1 (text stays its real size). Default 760. */
+  width?: number;
   /** Fixture label rendered on the chart, e.g. "Simulated fixture". */
   fixtureLabel?: string;
 }
 
-const W = 760;
+const DEFAULT_W = 760;
 const M = { top: 16, right: 104, bottom: 30, left: 52 };
 
 /**
@@ -55,8 +57,10 @@ export function TrendChart({
   timeSystem = 'UTC',
   missionEpochIso,
   height = 240,
+  width,
   fixtureLabel,
 }: TrendChartProps) {
+  const W = Math.max(320, Math.round(width ?? DEFAULT_W));
   const uid = useId().replace(/:/g, '');
   const maxGapMs = maxGapProp ?? inferMaxGapMs(samples);
   const H = height;
@@ -70,10 +74,11 @@ export function TrendChart({
   const x = linear(t0, tNow, M.left, W - M.right);
   const y = linear(yMin, yMax, H - M.bottom, M.top);
   const yTicks = niceTicks(yMin, yMax, 4);
+  // Time labels are ~90 px wide ("21:47 UTC"); keep ≥ 140 px between them so they never collide at any width.
   const xTicks = useMemo(() => {
-    const n = 4;
+    const n = Math.max(1, Math.min(6, Math.floor((W - M.left - M.right) / 140)));
     return Array.from({ length: n + 1 }, (_, i) => t0 + ((tNow - t0) * i) / n);
-  }, [t0, tNow]);
+  }, [t0, tNow, W]);
 
   const liveT = liveFrom ? Date.parse(liveFrom) : undefined;
   const runs = segments(samples, maxGapMs);

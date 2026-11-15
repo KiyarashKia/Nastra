@@ -14,7 +14,7 @@ export const ExplanationSchema = z.object({
   cited: z.array(z.string()),
 });
 
-export type Stage = 'first_turn' | 'followup' | 'guidance' | 'data_answer';
+export type Stage = 'first_turn' | 'followup' | 'guidance' | 'data_answer' | 'escalated';
 
 export const RESPOND_SYSTEM_PROMPT = `You are NASTRA, an onboard health assistant for astronauts. You are speaking to a crew member.
 Write a short explanation of what the evidence shows. Code will add any safety step, questions and next steps around your text, so do NOT include them.
@@ -34,6 +34,7 @@ const STAGE_HINT: Record<Stage, string> = {
   followup: 'They answered some follow-up questions. Briefly reflect what they told you, then any evidence that matters.',
   guidance: 'Safety questions are cleared. Explain what the evidence and their history suggest, as associations, before the next steps.',
   data_answer: 'They asked about their own data. Answer the question directly from the evidence.',
+  escalated: 'An escalation is already active for this crew member (see <situation>); help is on the way and code shows its status separately. Reply directly and warmly to what they just said, using <conversation> so you never lose the thread. Do not repeat that an escalation is active or restate the alert status. Do not start a new symptom assessment. If they report something new, acknowledge it in their words and say you have added it to the open event. Evidence is optional here: cite it only when you state a measured fact.',
 };
 
 export interface ExplanationResult {
@@ -48,13 +49,15 @@ export interface ExplanationResult {
 
 export async function explain(
   llm: LlmClient,
-  opts: { model: string; utterance: string; stage: Stage; evidence: EvidenceItem[]; answersSummary?: string },
+  opts: { model: string; utterance: string; stage: Stage; evidence: EvidenceItem[]; answersSummary?: string; situation?: string; conversation?: string },
 ): Promise<ExplanationResult> {
   const ids = opts.evidence.map((e) => e.id);
   const evidenceText = opts.evidence.map((e) => `[${e.id}] (${e.kind}) ${e.title}: ${e.detail}`).join('\n');
   const user = [
     `<crew_message>${opts.utterance.replace(/<\/?[a-z_]+>/gi, '')}</crew_message>`,
     opts.answersSummary ? `<answers>${opts.answersSummary}</answers>` : '',
+    opts.situation ? `<situation>${opts.situation}</situation>` : '',
+    opts.conversation ? `<conversation>\n${opts.conversation.replace(/<\/?[a-z_]+>/gi, '')}\n</conversation>` : '',
     `<stage>${STAGE_HINT[opts.stage]}</stage>`,
     `<evidence>\n${evidenceText || '(no evidence available)'}\n</evidence>`,
   ].filter(Boolean).join('\n');

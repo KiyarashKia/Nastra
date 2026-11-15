@@ -2,6 +2,7 @@
 import { useRouter } from 'next/navigation';
 import { Button, EscalationStatus, ProtocolStepper, Time } from '@nastra/nhis';
 import type { getProtocolView } from '@/nastra/station/read';
+import { Stamp } from '../Stamp';
 import { useApi } from '../useApi';
 import { useStation } from '../station-context';
 
@@ -17,15 +18,15 @@ export function ProtocolPage() {
   const esc = overview?.escalation ?? data.escalation;
 
   return (
-    <div className="st-page">
+    <div className="st-page st-page--fill">
       <h1 className="st-page__title">Protocol <span className="st-card__sub">Protocol engine controls workflow. NASTRA AI assists interpretation and communication.</span></h1>
       {!a ? (
-        <section className="st-card">
+        <section className="st-card st-fill-none">
           <p className="st-text">No protocol is active. If something feels off, tell NASTRA on the Overview and the right protocol starts from your report.</p>
           <Button intent="secondary" onPress={() => router.push('/overview')}>Go to Overview</Button>
         </section>
       ) : (
-        <div className="st-protocol">
+        <div className="st-protocol st-fill">
           <section>
             <ProtocolStepper title={a.title} protocolId={a.code} state={a.state === 'completed' ? 'completed' : 'active'}
               steps={a.steps.map((s) => ({ id: s.id, title: s.title, detail: s.detail, state: s.state, actor: s.actor as 'crew' | 'nastra' | 'ground' | 'system' }))} />
@@ -52,7 +53,7 @@ export function ProtocolPage() {
         <section className="st-card">
           <h2 className="st-card__title">Previous protocols</h2>
           <ul className="st-events">
-            {data.previous.map((p) => <li key={p.eventId} className="st-hint"><Time value={{ iso: p.at, system: 'UTC' }} seconds={false} /> · {p.code} {p.title} · {p.status.replace('_', ' ')}{p.outcome ? ` · ${p.outcome.replace(/_/g, ' ')}` : ''}{p.origin !== 'live' ? ' · simulated history' : ''}</li>)}
+            {data.previous.map((p) => <li key={p.eventId} className="st-hint"><Stamp iso={p.at} /> · {p.code} {p.title} · {p.status.replace('_', ' ')}{p.outcome && p.outcome.replace(/_/g, ' ') !== p.status.replace('_', ' ') ? ` · ${p.outcome.replace(/_/g, ' ')}` : ''}{p.origin !== 'live' ? ' · simulated history' : ''}</li>)}
           </ul>
         </section>
       )}

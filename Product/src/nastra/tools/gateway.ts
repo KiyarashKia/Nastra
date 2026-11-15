@@ -80,7 +80,8 @@ export class ToolGateway {
           mode: 'post_exercise' as const,
           minutesSinceExercise: num(post[0].minutes_since_exercise),
           windowMinutes,
-          metrics: post.map((r) => ({ metric: String(r.metric), recent: Number(r.recent_mean), reference: Number(r.typical_mean), sd: num(r.typical_sd), z: num(r.z_score) })),
+          // No samples in the window → no comparison (Number(null) would read as 0).
+          metrics: post.filter((r) => r.recent_mean !== null && r.recent_mean !== undefined).map((r) => ({ metric: String(r.metric), recent: Number(r.recent_mean), reference: Number(r.typical_mean), sd: num(r.typical_sd), z: num(r.z_score) })),
         };
       }
       const dev = await this.db.rpc<Record<string, unknown>>('vitals_deviation', {
@@ -90,7 +91,7 @@ export class ToolGateway {
         mode: 'resting_baseline' as const,
         minutesSinceExercise: null,
         windowMinutes,
-        metrics: dev.map((r) => ({ metric: String(r.metric), recent: Number(r.recent_mean), reference: Number(r.baseline_mean), sd: num(r.baseline_sd), z: num(r.z_score) })),
+        metrics: dev.filter((r) => r.recent_mean !== null && r.recent_mean !== undefined).map((r) => ({ metric: String(r.metric), recent: Number(r.recent_mean), reference: Number(r.baseline_mean), sd: num(r.baseline_sd), z: num(r.z_score) })),
       };
     }, (r) => ({ mode: r.mode, metrics: r.metrics.length }));
   }

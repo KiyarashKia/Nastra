@@ -1,0 +1,31 @@
+{
+  "name": "nastra-product",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "eval": "tsx scripts/run-eval.ts",
+    "eval:offline": "tsx scripts/run-eval.ts --offline",
+    "try": "tsx scripts/try.ts",
+    "db:test": "node scripts/test-db-local.mjs",
+    "typecheck": "tsc --noEmit",
+    "chat": "tsx scripts/chat.ts",
+    "ingest": "tsx scripts/ingest.ts",
+    "knowledge:test": "tsx scripts/knowledge-test.ts",
+    "surgeon": "tsx scripts/surgeon.ts"
+  },
+  "dependencies": {
+    "@huggingface/transformers": "^3.8.1",
+    "@supabase/supabase-js": "^2.119.0",
+    "zod": "^4.1.0"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.5.16",
+    "@electric-sql/pglite-pgvector": "^0.0.17",
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0",
+    "vitest": "^3.2.0"
+  }
+}

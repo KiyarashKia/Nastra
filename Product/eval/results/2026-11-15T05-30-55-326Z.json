@@ -1,0 +1,844 @@
+{
+  "models": [
+    "qwen/qwen3.5-9b"
+  ],
+  "rows": [
+    {
+      "id": "S01",
+      "model": "qwen/qwen3.5-9b",
+      "ok": true,
+      "checks": {
+        "critical": true,
+        "action": true,
+        "speech_act": true,
+        "domain": true,
+        "body_system": true,
+        "protocol": true,
+        "followup": true,
+        "ready": true,
+        "parsed": true
+      },
+      "latencyMs": 2033,
+      "attempts": 1,
+      "got": {
+        "speech_act": "report",
+        "domain": "physical_symptom",
+        "symptoms": [
+          "disorientation/sensorimotor_vestibular"
+        ],
+        "urgency": "advisory",
+        "confidence": "high",
+        "action": "protocol",
+        "protocol": "sensorimotor_disorientation",
+        "followup": []
+      },
+      "errors": []
+    },
+    {
+      "id": "S02",
+      "model": "qwen/qwen3.5-9b",
+      "ok": true,
+      "checks": {
+        "critical": true,
+        "action": true,
+        "speech_act": true,
+        "domain": true,
+        "body_system": true,
+        "protocol": true,
+        "followup": true,
+        "ready": true,
+        "parsed": true
+      },
+      "latencyMs": 1918,
+      "attempts": 1,
+      "got": {
+        "speech_act": "report",
+        "domain": "physical_symptom",
+        "symptoms": [
+          "disorientation/sensorimotor_vestibular"
+        ],
+        "urgency": "advisory",
+        "confidence": "high",
+        "action": "protocol",
+        "protocol": "sensorimotor_disorientation",
+        "followup": []
+      },
+      "errors": []
+    },
+    {
+      "id": "S03",
+      "model": "qwen/qwen3.5-9b",
+      "ok": true,
+      "checks": {
+        "critical": true,
+        "action": true,
+        "speech_act": true,
+        "domain": true,
+        "body_system": true,
+        "protocol": true,
+        "followup": true,
+        "ready": true,
+        "parsed": true
+      },
+      "latencyMs": 2620,
+      "attempts": 1,
+      "got": {
+        "speech_act": "report",
+        "domain": "physical_symptom",
+        "symptoms": [
+          "disorientation/sensorimotor_vestibular"
+        ],
+        "urgency": "advisory",
+        "confidence": "high",
+        "action": "protocol",
+        "protocol": "sensorimotor_disorientation",
+        "followup": []
+      },
+      "errors": []
+    },
+    {
+      "id": "S04",
+      "model": "qwen/qwen3.5-9b",
+      "ok": true,
+      "checks": {
+        "critical": true,
+        "action": true,
+        "speech_act": true,
+        "domain": true,
+        "body_system": true,
+        "protocol": true,
+        "followup": true,
+        "ready": true,
+        "parsed": true
+      },
+      "latencyMs": 2412,
+      "attempts": 1,
+      "got": {
+        "speech_act": "report",
+        "domain": "physical_symptom",
+        "symptoms": [
+          "nausea/gastrointestinal",
+          "disorientation/sensorimotor_vestibular"
+        ],
+        "urgency": "advisory",
+        "confidence": "high",
+        "action": "protocol",
+        "protocol": "sensorimotor_disorientation",
+        "followup": []
+      },
+      "errors": []
+    },
+    {
+      "id": "S05",
+      "model": "qwen/qwen3.5-9b",
+      "ok": true,
+      "checks": {
+        "critical": true,
+        "action": true,
+        "speech_act": true,
+        "domain": true,
+        "body_system": true,
+        "protocol": true,
+        "followup": true,
+        "ready": true,
+        "parsed": true
+      },
+      "latencyMs": 3471,
+      "attempts": 1,
+      "got": {
+        "speech_act": "report",
+        "domain": "physical_symptom",
+        "symptoms": [
+          "disorientation/sensorimotor_vestibular"
+        ],
+        "urgency": "advisory",
+        "confidence": "high",
+        "action": "protocol",
+        "protocol": "sensorimotor_disorientation",
+        "followup": []
+      },
+      "errors": []
+    },
+    {
+      "id": "R01",
+      "model": "qwen/qwen3.5-9b",
+      "ok": true,
+      "checks": {
+        "critical": true,
+        "action": true,
+        "speech_act": true,
+        "domain": true,
+        "body_system": true,
+        "protocol": true,
+        "followup": true,
+        "ready": true,
+        "parsed": true
+      },
+      "latencyMs": 0,
+      "attempts": 0,
+      "got": {
+        "action": "escalate",
+        "safety": [
+          "loss_of_consciousness"
+        ]
+      },
+      "errors": []
+    },
+    {
+      "id": "R02",
+      "model": "qwen/qwen3.5-9b",
+      "ok": true,
+      "checks": {
+        "critical": true,
+        "action": true,
+        "speech_act": true,
+        "domain": true,
+        "body_system": true,
+        "protocol": true,
+        "followup": true,
+        "ready": true,
+        "parsed": true
+      },
+      "latencyMs": 0,
+      "attempts": 0,
+      "got": {
+        "action": "escalate",
+        "safety": [
+          "chest_pain"
+        ]
+      },
+      "errors": []
+    },
+    {
+      "id": "R03",
+      "model": "qwen/qwen3.5-9b",
+      "ok": true,
+      "checks": {
+        "critical": true,
+        "action": true,
+        "speech_act": true,
+        "domain": true,
+        "body_system": true,
+        "protocol": true,
+        "followup": true,
+        "ready": true,
+        "parsed": true
+      },
+      "latencyMs": 0,
+      "attempts": 0,
+      "got": {
+        "action": "escalate",
+        "safety": [
+          "thunderclap_headache"
+        ]
+      },
+      "errors": []
+    },
+    {
+      "id": "R04",
+      "model": "qwen/qwen3.5-9b",
+      "ok": true,
+      "checks": {
+        "critical": true,
+        "action": true,
+        "speech_act": true,
+        "domain": true,
+        "body_system": true,
+        "protocol": true,
+        "followup": true,
+        "ready": true,
+        "parsed": true
+      },
+      "latencyMs": 0,
+      "attempts": 0,
+      "got": {
+        "action": "escalate",
+        "safety": [
+          "neuro_deficit"
+        ]
+      },
+      "errors": []
+    },
+    {
+      "id": "R05",
+      "model": "qwen/qwen3.5-9b",
+      "ok": true,
+      "checks": {
+        "critical": true,
+        "action": true,
+        "speech_act": true,
+        "domain": true,
+        "body_system": true,
+        "protocol": true,
+        "followup": true,
+        "ready": true,
+        "parsed": true
+      },
+      "latencyMs": 0,
+      "attempts": 0,
+      "got": {
+        "action": "escalate",
+        "safety": [
+          "self_harm"
+        ]
+      },
+      "errors": []
+    },
+    {
+      "id": "R06",
+      "model": "qwen/qwen3.5-9b",
+      "ok": true,
+      "checks": {
+        "critical": true,
+        "action": true,
+        "speech_act": true,
+        "domain": true,
+        "body_system": true,
+        "protocol": true,
+        "followup": true,
+        "ready": true,
+        "parsed": true
+      },
+      "latencyMs": 0,
+      "attempts": 0,
+      "got": {
+        "action": "escalate",
+        "safety": [
+          "breathing"
+        ]
+      },
+      "errors": []
+    },
+    {
+      "id": "P01",
+      "model": "qwen/qwen3.5-9b",
+      "ok": true,
+      "checks": {
+        "critical": true,
+        "action": true,
+        "speech_act": true,
+        "domain": true,
+        "body_system": true,
+        "protocol": true,
+        "followup": true,
+        "ready": true,
+        "parsed": true
+      },
+      "latencyMs": 1839,
+      "attempts": 1,
+      "got": {
+        "speech_act": "report",
+        "domain": "psychological",
+        "symptoms": [
+          "acute_stress/behavioral_health"
+        ],
+        "urgency": "advisory",
+        "confidence": "high",
+        "action": "protocol",
+        "protocol": "acute_stress",
+        "followup": []
+      },
+      "errors": []
+    },
+    {
+      "id": "P02",
+      "model": "qwen/qwen3.5-9b",
+      "ok": true,
+      "checks": {
+        "critical": true,
+        "action": true,
+        "speech_act": true,
+        "domain": true,
+        "body_system": true,
+        "protocol": true,
+        "followup": true,
+        "ready": true,
+        "parsed": true
+      },
+      "latencyMs": 2223,
+      "attempts": 1,
+      "got": {
+        "speech_act": "report",
+        "domain": "psychological",
+        "symptoms": [
+          "racing_thoughts/behavioral_health"
+        ],
+        "urgency": "advisory",
+        "confidence": "high",
+        "action": "protocol",
+        "protocol": "acute_stress",
+        "followup": []
+      },
+      "errors": []
+    },
+    {
+      "id": "P03",
+      "model": "qwen/qwen3.5-9b",
+      "ok": true,
+      "checks": {
+        "critical": true,
+        "action": true,
+        "speech_act": true,
+        "domain": true,
+        "body_system": true,
+        "protocol": true,
+        "followup": true,
+        "ready": true,
+        "parsed": true
+      },
+      "latencyMs": 2939,
+      "attempts": 1,
+      "got": {
+        "speech_act": "report",
+        "domain": "psychological",
+        "symptoms": [
+          "low_mood/behavioral_health",
+          "social_withdrawal/behavioral_health"
+        ],
+        "urgency": "advisory",
+        "confidence": "high",
+        "action": "protocol",
+        "protocol": "acute_stress",
+        "followup": []
+      },
+      "errors": []
+    },
+    {
+      "id": "P04",
+      "model": "qwen/qwen3.5-9b",
+      "ok": true,
+      "checks": {
+        "critical": true,
+        "action": true,
+        "speech_act": true,
+        "domain": true,
+        "body_system": true,
+        "protocol": true,
+        "followup": true,
+        "ready": true,
+        "parsed": true
+      },
+      "latencyMs": 2695,
+      "attempts": 1,
+      "got": {
+        "speech_act": "report",
+        "domain": "psychological",
+        "symptoms": [
+          "acute_stress/behavioral_health",
+          "palpitations/cardiovascular"
+        ],
+        "urgency": "caution",
+        "confidence": "high",
+        "action": "protocol",
+        "protocol": "acute_stress",
+        "followup": []
+      },
+      "errors": []
+    },
+    {
+      "id": "G01",
+      "model": "qwen/qwen3.5-9b",
+      "ok": true,
+      "checks": {
+        "critical": true,
+        "action": true,
+        "speech_act": true,
+        "domain": true,
+        "body_system": true,
+        "protocol": true,
+        "followup": true,
+        "ready": true,
+        "parsed": true
+      },
+      "latencyMs": 2375,
+      "attempts": 1,
+      "got": {
+        "speech_act": "report",
+        "domain": "physical_symptom",
+        "symptoms": [
+          "headache/neuro_ocular"
+        ],
+        "urgency": "advisory",
+        "confidence": "high",
+        "action": "protocol",
+        "protocol": "general_physical",
+        "followup": []
+      },
+      "errors": []
+    },
+    {
+      "id": "G02",
+      "model": "qwen/qwen3.5-9b",
+      "ok": true,
+      "checks": {
+        "critical": true,
+        "action": true,
+        "speech_act": true,
+        "domain": true,
+        "body_system": true,
+        "protocol": true,
+        "followup": true,
+        "ready": true,
+        "parsed": true
+      },
+      "latencyMs": 2185,
+      "attempts": 1,
+      "got": {
+        "speech_act": "report",
+        "domain": "physical_symptom",
+        "symptoms": [
+          "nausea/gastrointestinal"
+        ],
+        "urgency": "advisory",
+        "confidence": "high",
+        "action": "protocol",
+        "protocol": "general_physical",
+        "followup": []
+      },
+      "errors": []
+    },
+    {
+      "id": "D01",
+      "model": "qwen/qwen3.5-9b",
+      "ok": true,
+      "checks": {
+        "critical": true,
+        "action": true,
+        "speech_act": true,
+        "domain": true,
+        "body_system": true,
+        "protocol": true,
+        "followup": true,
+        "ready": true,
+        "parsed": true
+      },
+      "latencyMs": 2267,
+      "attempts": 1,
+      "got": {
+        "speech_act": "question",
+        "domain": "health_data",
+        "symptoms": [],
+        "urgency": "nominal",
+        "confidence": "high",
+        "action": "answer_data",
+        "followup": []
+      },
+      "errors": []
+    },
+    {
+      "id": "D02",
+      "model": "qwen/qwen3.5-9b",
+      "ok": true,
+      "checks": {
+        "critical": true,
+        "action": true,
+        "speech_act": true,
+        "domain": true,
+        "body_system": true,
+        "protocol": true,
+        "followup": true,
+        "ready": true,
+        "parsed": true
+      },
+      "latencyMs": 1244,
+      "attempts": 1,
+      "got": {
+        "speech_act": "question",
+        "domain": "health_data",
+        "symptoms": [],
+        "urgency": "nominal",
+        "confidence": "high",
+        "action": "answer_data",
+        "followup": []
+      },
+      "errors": []
+    },
+    {
+      "id": "D03",
+      "model": "qwen/qwen3.5-9b",
+      "ok": true,
+      "checks": {
+        "critical": true,
+        "action": true,
+        "speech_act": true,
+        "domain": true,
+        "body_system": true,
+        "protocol": true,
+        "followup": true,
+        "ready": true,
+        "parsed": true
+      },
+      "latencyMs": 1590,
+      "attempts": 1,
+      "got": {
+        "speech_act": "request",
+        "domain": "health_data",
+        "symptoms": [],
+        "urgency": "nominal",
+        "confidence": "high",
+        "action": "answer_data",
+        "followup": []
+      },
+      "errors": []
+    },
+    {
+      "id": "L01",
+      "model": "qwen/qwen3.5-9b",
+      "ok": true,
+      "checks": {
+        "critical": true,
+        "action": true,
+        "speech_act": true,
+        "domain": true,
+        "body_system": true,
+        "protocol": true,
+        "followup": true,
+        "ready": true,
+        "parsed": true
+      },
+      "latencyMs": 1237,
+      "attempts": 1,
+      "got": {
+        "speech_act": "log",
+        "domain": "health_data",
+        "symptoms": [],
+        "urgency": "nominal",
+        "confidence": "high",
+        "action": "log",
+        "followup": []
+      },
+      "errors": []
+    },
+    {
+      "id": "L02",
+      "model": "qwen/qwen3.5-9b",
+      "ok": true,
+      "checks": {
+        "critical": true,
+        "action": true,
+        "speech_act": true,
+        "domain": true,
+        "body_system": true,
+        "protocol": true,
+        "followup": true,
+        "ready": true,
+        "parsed": true
+      },
+      "latencyMs": 1361,
+      "attempts": 1,
+      "got": {
+        "speech_act": "log",
+        "domain": "psychological",
+        "symptoms": [],
+        "urgency": "nominal",
+        "confidence": "high",
+        "action": "log",
+        "followup": []
+      },
+      "errors": []
+    },
+    {
+      "id": "O01",
+      "model": "qwen/qwen3.5-9b",
+      "ok": true,
+      "checks": {
+        "critical": true,
+        "action": true,
+        "speech_act": true,
+        "domain": true,
+        "body_system": true,
+        "protocol": true,
+        "followup": true,
+        "ready": true,
+        "parsed": true
+      },
+      "latencyMs": 1498,
+      "attempts": 1,
+      "got": {
+        "speech_act": "question",
+        "domain": "out_of_scope",
+        "symptoms": [],
+        "urgency": "nominal",
+        "confidence": "high",
+        "action": "redirect",
+        "followup": []
+      },
+      "errors": []
+    },
+    {
+      "id": "O02",
+      "model": "qwen/qwen3.5-9b",
+      "ok": true,
+      "checks": {
+        "critical": true,
+        "action": true,
+        "speech_act": true,
+        "domain": true,
+        "body_system": true,
+        "protocol": true,
+        "followup": true,
+        "ready": true,
+        "parsed": true
+      },
+      "latencyMs": 1035,
+      "attempts": 1,
+      "got": {
+        "speech_act": "report",
+        "domain": "out_of_scope",
+        "symptoms": [],
+        "urgency": "nominal",
+        "confidence": "high",
+        "action": "redirect",
+        "followup": []
+      },
+      "errors": []
+    },
+    {
+      "id": "O03",
+      "model": "qwen/qwen3.5-9b",
+      "ok": true,
+      "checks": {
+        "critical": true,
+        "action": true,
+        "speech_act": true,
+        "domain": true,
+        "body_system": true,
+        "protocol": true,
+        "followup": true,
+        "ready": true,
+        "parsed": true
+      },
+      "latencyMs": 1356,
+      "attempts": 1,
+      "got": {
+        "speech_act": "report",
+        "domain": "out_of_scope",
+        "symptoms": [],
+        "urgency": "nominal",
+        "confidence": "high",
+        "action": "redirect",
+        "followup": []
+      },
+      "errors": []
+    },
+    {
+      "id": "F01",
+      "model": "qwen/qwen3.5-9b",
+      "ok": true,
+      "checks": {
+        "critical": true,
+        "action": true,
+        "speech_act": true,
+        "domain": true,
+        "body_system": true,
+        "protocol": true,
+        "followup": true,
+        "ready": true,
+        "parsed": true
+      },
+      "latencyMs": 4106,
+      "attempts": 1,
+      "got": {
+        "speech_act": "report",
+        "domain": "physical_symptom",
+        "symptoms": [
+          "dizziness/sensorimotor_vestibular"
+        ],
+        "urgency": "advisory",
+        "confidence": "high",
+        "action": "protocol",
+        "protocol": "sensorimotor_disorientation",
+        "followup": [
+          {
+            "question_id": "q_red_flags",
+            "answer": "no",
+            "detail": "none of those symptoms present"
+          },
+          {
+            "question_id": "q_onset",
+            "answer": "yes",
+            "detail": "started about 20 minutes after workout, comes and goes"
+          },
+          {
+            "question_id": "q_task",
+            "answer": "unclear",
+            "detail": "not explicitly stated if handling equipment or doing safety-critical tasks"
+          }
+        ]
+      },
+      "errors": []
+    },
+    {
+      "id": "F02",
+      "model": "qwen/qwen3.5-9b",
+      "ok": true,
+      "checks": {
+        "critical": true,
+        "action": true,
+        "speech_act": true,
+        "domain": true,
+        "body_system": true,
+        "protocol": true,
+        "followup": true,
+        "ready": true,
+        "parsed": true
+      },
+      "latencyMs": 0,
+      "attempts": 0,
+      "got": {
+        "action": "escalate",
+        "safety": [
+          "loss_of_consciousness"
+        ]
+      },
+      "errors": []
+    },
+    {
+      "id": "F03",
+      "model": "qwen/qwen3.5-9b",
+      "ok": true,
+      "checks": {
+        "critical": true,
+        "action": true,
+        "speech_act": true,
+        "domain": true,
+        "body_system": true,
+        "protocol": true,
+        "followup": true,
+        "ready": true,
+        "parsed": true
+      },
+      "latencyMs": 4671,
+      "attempts": 1,
+      "got": {
+        "speech_act": "report",
+        "domain": "physical_symptom",
+        "symptoms": [
+          "disorientation/sensorimotor_vestibular"
+        ],
+        "urgency": "caution",
+        "confidence": "high",
+        "action": "protocol",
+        "protocol": "sensorimotor_disorientation",
+        "followup": [
+          {
+            "question_id": "q_red_flags",
+            "answer": "no",
+            "detail": "denied fainting, chest pain, trouble breathing, new weakness/numbness, trouble speaking, vision loss, sudden severe headache"
+          },
+          {
+            "question_id": "q_onset",
+            "answer": "unclear",
+            "detail": "stated 'Started after exercise' but did not specify if constant or intermittent"
+          },
+          {
+            "question_id": "q_task",
+            "answer": "unclear",
+            "detail": "asked about handling equipment/safety-critical tasks but did not provide a yes/no answer"
+          }
+        ]
+      },
+      "errors": []
+    }
+  ]
+}

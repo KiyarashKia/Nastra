@@ -1,7 +1,7 @@
 /**
  * Try one message by hand:
  *   npm run try -- "I feel the room is tilting"
- *   npm run try -- --model qwen/qwen3.5-9b "Show my sleep this week"
+ *   npm run try -- --model google/gemma-4-26b-a4b-it "Show my sleep this week"
  */
 import { loadEnv } from './env';
 import { normalizeInput } from '../src/nastra/normalize';

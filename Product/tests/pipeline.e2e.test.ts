@@ -279,3 +279,33 @@ describe('pipeline — deterioration must reach the flight surgeon', () => {
     expect(archivedAlerts).toBeGreaterThan(0);
   });
 });
+
+describe('flight-surgeon brief', () => {
+  it('replays "negative. started an hour ago. i have numbness": brief names the sign, the data and the conversation', async () => {
+    await pg.query('select nastra_reseed($1::timestamptz)', [ANCHOR]);
+    const db = createPgliteDb(pg);
+    const T = (m: number) => new Date(Date.parse(ANCHOR) + m * 60_000).toISOString();
+    const t1 = await handleMessage({ crewId: 'crew_02', text: 'I feel the room is tilting' }, {
+      db, model: 'fake', asOf: T(2),
+      llm: fakeLlm([interp({ symptoms: [{ said: 'room is tilting', category: 'disorientation', body_system: 'sensorimotor_vestibular' }] })]),
+    });
+    const t2 = await handleMessage({ crewId: 'crew_02', eventId: t1.eventId!, text: 'negative. started an hour ago. i have numbness' }, {
+      db, model: 'fake', asOf: T(3),
+      llm: fakeLlm([interp({
+        symptoms: [{ said: 'numbness', category: 'numbness', body_system: 'other' }], onset: 'an hour ago',
+        followup_answers: [{ question_id: 'q_red_flags', answer: 'yes', detail: 'reports numbness' }],
+      })]),
+    });
+    expect(t2.action).toBe('escalate');
+    const a = (await pg.query<{ headline: string; brief: Record<string, any> }>('select headline, brief from surgeon_alerts where id = $1', [t2.alert!.id])).rows[0];
+    expect(a.headline).toMatch(/crew_02: reports new weakness or numbness during check for "I feel the room is tilting"/);
+    expect(a.headline).toMatch(/onset an hour ago/);
+    expect(a.brief.trigger).toMatch(/answered yes to: "Any fainting/);
+    expect(a.brief.reported_now[0]).toEqual({ sign: 'new weakness or numbness', crew_words: 'i have numbness' });
+    expect(a.brief.flags.join('\n')).toMatch(/HR \d+ bpm vs usual at \d+ min post-exercise \d+ \(\+\d+/);
+    expect(a.brief.flags.join('\n')).toMatch(/2 similar past episodes/);
+    expect(a.brief.flags.join('\n')).toMatch(/EVA 1 in [\d.]+ h — fitness-for-duty/);
+    expect(a.brief.timeline.filter((t: any) => t.who === 'crew').map((t: any) => t.text)).toEqual(['I feel the room is tilting', 'negative. started an hour ago. i have numbness']);
+    expect(a.brief.model_notes[0]).toMatch(/→ yes: reports numbness/);
+  });
+});

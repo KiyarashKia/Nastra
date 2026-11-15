@@ -157,7 +157,7 @@ export function screenText(text: string): SafetyScreen {
   };
 }
 
-function isNegated(text: string, index: number): boolean {
+export function isNegated(text: string, index: number): boolean {
   let before = text.slice(Math.max(0, index - NEGATION_WINDOW), index);
   // Only look inside the current clause.
   const parts = before.split(CLAUSE_BREAK);

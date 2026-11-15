@@ -11,6 +11,7 @@ import type { EventState, RouteResult } from './router';
 import { ToolGateway } from './tools/gateway';
 import type { SourceRef, Urgency } from './types';
 import { understand, type Understanding } from './understand';
+import { buildSurgeonBrief } from './surgeon/brief';
 
 export interface NastraReply {
   eventId: string | null;
@@ -116,7 +117,20 @@ export async function handleMessage(raw: RawInput, deps: PipelineDeps): Promise<
   if (a.kind === 'escalate') {
     const gw = new ToolGateway(deps.db, { crewId: env.crewId, asOf, allowed: ALL_TOOLS });
     // Best effort: package current data for the flight surgeon. Never blocks the escalation.
-    const [vitals, mission] = await Promise.all([gw.vitalsNow().catch(() => undefined), gw.missionContext().catch(() => undefined)]);
+    const [vitals, mission, sleep, mood] = await Promise.all([
+      gw.vitalsNow().catch(() => undefined), gw.missionContext().catch(() => undefined),
+      gw.recentSleep(3).catch(() => undefined), gw.recentMood(1).catch(() => undefined),
+    ]);
+    const interpNow = u.interpretation?.interpretation ?? null;
+    const evSymptoms = parse(event?.symptoms) as unknown;
+    // Past episodes for every body system in this event: the original complaint first, then anything new.
+    const systems = [...new Set([
+      ...(Array.isArray(evSymptoms) ? (evSymptoms as { body_system?: string }[]).map((x) => x.body_system) : []),
+      ...(interpNow?.symptoms ?? []).map((x) => x.body_system),
+    ].filter((x): x is string => !!x && x !== 'other'))];
+    const episodes = (await Promise.all(systems.map((bs) =>
+      gw.similarEpisodes({ bodySystem: bs, domain: null, missionContext: mission?.context ?? null }).catch(() => []),
+    ))).flat().filter((e, i, all) => e.matched_on.includes('body_system') && all.findIndex((x) => x.id === e.id) === i);
     const evidence = buildEvidence({ vitals, mission });
     const eventId = await persist(deps.db, {
       event, env, u, asOf, status: 'escalated', protocol: u.route.protocol, mission,
@@ -126,9 +140,16 @@ export async function handleMessage(raw: RawInput, deps: PipelineDeps): Promise<
     // The promise in ESCALATION.steps ("I'm sending this … to the flight surgeon") must be true.
     let alert: NonNullable<NastraReply['alert']>;
     try {
+      const transcript = await deps.db.rpc<{ ts: string; role: string; content: string }>('event_transcript', { p_event_id: eventId }).catch(() => []);
+      const brief = buildSurgeonBrief({
+        crewId: env.crewId, asOf, utterance: env.utterance, trigger: a.trigger,
+        event: event ? { utterance: (event as { utterance?: string | null }).utterance ?? null, opened_at: event.opened_at, symptoms: event.symptoms, protocol_id: event.protocol_id, asked: state?.asked } : null,
+        interp: interpNow, transcript, vitals, sleep, mood, mission, episodes,
+        questionText: Object.fromEntries([...Object.values(PROTOCOLS), ...(u.route.protocol ? [u.route.protocol] : [])].flatMap((p) => p.mandatoryQuestions.map((q) => [q.id, q.text]))),
+      });
       const row = await deps.db.insert<{ id: string }>('surgeon_alerts', {
         event_id: eventId, crew_id: env.crewId, urgency: 'warning', reasons: a.reasons,
-        utterance: env.utterance, evidence, status: 'pending', created_at: asOf,
+        utterance: env.utterance, evidence, headline: brief.headline, brief, status: 'pending', created_at: asOf,
       });
       alert = { id: row.id, delivered: true };
     } catch (err) {

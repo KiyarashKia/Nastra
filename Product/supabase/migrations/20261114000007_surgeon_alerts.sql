@@ -63,7 +63,8 @@ begin
   where e.origin = 'live';
   get diagnostics archived = row_count;
 
-  delete from public.surgeon_alerts;
+  -- Supabase rejects DELETE without WHERE on API connections (safeupdate).
+  delete from public.surgeon_alerts where true;
   result := public._nastra_reseed_core(p_anchor);
   return result || jsonb_build_object('archived_live_events', archived);
 end;

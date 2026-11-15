@@ -2,7 +2,7 @@
  * NASTRA eval: runs every case in eval/cases.json through
  * normalize → safety screen → interpret (model) → route, and scores it.
  *
- *   npm run eval -- --models qwen/qwen3.5-9b,qwen/qwen3.5-35b-a3b
+ *   npm run eval -- --models google/gemma-4-26b-a4b-it,google/gemma-4-31b-it
  *   npm run eval:offline          (safety screen only, no model, no network)
  *   npm run eval -- --only S01,F01 --verbose
  *

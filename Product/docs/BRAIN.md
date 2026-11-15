@@ -38,8 +38,8 @@ tests/                   49 tests, incl. the full tilting story end-to-end on an
 npm install
 npm test                                  # 39 unit tests, no network
 npm run eval:offline                      # safety screen on all 28 cases, no network
-npm run eval -- --models qwen/qwen3.5-9b,qwen/qwen3.5-35b-a3b,<nemotron-id>
-npm run try -- --model qwen/qwen3.5-9b "I feel the room is tilting"
+npm run eval -- --models google/gemma-4-26b-a4b-it,google/gemma-4-31b-it
+npm run try -- --model google/gemma-4-26b-a4b-it "I feel the room is tilting"
 npm run chat                              # talk to NASTRA: real Supabase data + real model
 ```
 

@@ -5,7 +5,7 @@ import { maxUrgency, type Urgency } from './types';
 
 /** What code decided to do. The model only writes the words for it. */
 export type Action =
-  | { kind: 'escalate'; reasons: string[] }
+  | { kind: 'escalate'; reasons: string[]; trigger: EscalationTrigger }
   | { kind: 'clarify'; reason: string }
   | {
       kind: 'protocol';
@@ -17,6 +17,14 @@ export type Action =
   | { kind: 'answer_data'; target: string | null }
   | { kind: 'log'; needsConfirmation: true }
   | { kind: 'redirect' };
+
+/** Why code escalated, in a form the flight-surgeon brief can explain precisely. */
+export type EscalationTrigger =
+  | { kind: 'safety_screen'; hits: { id: string; label: string; match: string }[] }
+  | { kind: 'red_flag_answer'; questionId: string; questionText: string }
+  | { kind: 'unanswered_check'; prompts: number }
+  | { kind: 'unclear_message' }
+  | { kind: 'model_flag' };
 
 export interface EventState {
   protocolId: string | null;
@@ -47,7 +55,7 @@ export function route(screen: SafetyScreen, interp: Interpretation, state?: Even
   // 1. Deterministic red flags in the text. Nothing overrides this.
   if (screen.critical) {
     trace.push(`safety screen: ${screen.hits.map((h) => h.id).join(', ')}`);
-    return { action: { kind: 'escalate', reasons: screen.hits.map((h) => h.label) }, urgency: 'warning', protocol: null, trace };
+    return { action: { kind: 'escalate', reasons: screen.hits.map((h) => h.label), trigger: { kind: 'safety_screen', hits: screen.hits } }, urgency: 'warning', protocol: null, trace };
   }
 
   // 2. Inside an open event: a "yes" to any red-flag question escalates.
@@ -60,7 +68,10 @@ export function route(screen: SafetyScreen, interp: Interpretation, state?: Even
       // Model notes are kept in the audit trail, never shown as the reason.
       for (const a of yes) if (a.detail) trace.push(`model note (not shown): ${a.detail}`);
       return {
-        action: { kind: 'escalate', reasons: ['You answered yes to the warning-signs check'] },
+        action: {
+          kind: 'escalate', reasons: ['You answered yes to the warning-signs check'],
+          trigger: { kind: 'red_flag_answer', questionId: yes[0].question_id, questionText: protocolFromState.mandatoryQuestions.find((q) => q.id === yes[0].question_id)?.text ?? yes[0].question_id },
+        },
         urgency: 'warning', protocol: protocolFromState, trace,
       };
     }
@@ -79,14 +90,14 @@ export function route(screen: SafetyScreen, interp: Interpretation, state?: Even
     if (stillOpen && interp.confidence === 'low') {
       trace.push('warning-signs check open + unclear message');
       return {
-        action: { kind: 'escalate', reasons: ['No clear answer to the warning-signs check, and your last message was unclear'] },
+        action: { kind: 'escalate', reasons: ['No clear answer to the warning-signs check, and your last message was unclear'], trigger: { kind: 'unclear_message' } },
         urgency: 'warning', protocol: protocolFromState, trace,
       };
     }
     if (stillOpen && (state.redFlagPrompts ?? 0) >= MAX_UNANSWERED_RED_FLAG_PROMPTS) {
       trace.push(`warning-signs check unanswered after ${state.redFlagPrompts} prompts`);
       return {
-        action: { kind: 'escalate', reasons: [`The warning-signs check went unanswered ${state.redFlagPrompts} times`] },
+        action: { kind: 'escalate', reasons: [`The warning-signs check went unanswered ${state.redFlagPrompts} times`], trigger: { kind: 'unanswered_check', prompts: state.redFlagPrompts ?? 0 } },
         urgency: 'warning', protocol: protocolFromState, trace,
       };
     }
@@ -95,7 +106,7 @@ export function route(screen: SafetyScreen, interp: Interpretation, state?: Even
   // 3. The model may raise urgency to warning; code then escalates.
   if (interp.urgency_hint === 'warning') {
     trace.push('model urgency_hint = warning');
-    return { action: { kind: 'escalate', reasons: ['Model flagged the message as a possible emergency'] }, urgency: 'warning', protocol: null, trace };
+    return { action: { kind: 'escalate', reasons: ['Model flagged the message as a possible emergency'], trigger: { kind: 'model_flag' } }, urgency: 'warning', protocol: null, trace };
   }
 
   // 4. Continue an open protocol event.

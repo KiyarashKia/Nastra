@@ -4,7 +4,7 @@
  * the model id. Nothing else changes. That is the "onboard" story.
  */
 /** Chosen 2026-11-14 after the first eval run (26/28, ~1.1 s median). */
-export const DEFAULT_MODEL = 'qwen/qwen3.5-9b';
+export const DEFAULT_MODEL = 'google/gemma-4-26b-a4b-it';
 
 export interface ChatMessage {
   role: 'system' | 'user' | 'assistant';

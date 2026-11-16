@@ -23,7 +23,7 @@ export type ChatItem =
   | { id: string; at: string; role: 'nastra' | 'system'; kind: 'reply'; reply: NastraReply; answered?: Record<string, string>; confirmed?: boolean }
   | { id: string; at: string; role: 'nastra'; kind: 'progress'; steps: ProgressEvent[]; state: 'running' | 'done' | 'stopped' | 'failed' }
   | { id: string; at: string; role: 'system'; kind: 'event'; text: string; tone?: 'safety' }
-  | { id: string; at: string; role: 'system'; kind: 'checkin'; done?: boolean };
+  | { id: string; at: string; role: 'system'; kind: 'checkin'; done?: boolean; summary?: string };
 
 interface StationApi {
   status: StationStatus | null;

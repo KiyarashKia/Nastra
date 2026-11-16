@@ -62,7 +62,9 @@ export function ConversationWorkspace() {
 }
 
 function MessageBody({ item }: { item: ChatItem }) {
-  const { push, markItem } = useStation();
+  const { push, markItem, overview, chat } = useStation();
+  // One check-in a day: once saved (here or on the server), the opener's button goes away.
+  const checkInDone = !!overview?.checkIn.doneToday || chat.some((c) => c.kind === 'checkin' && c.done);
   switch (item.kind) {
     case 'text':
       return (
@@ -75,7 +77,7 @@ function MessageBody({ item }: { item: ChatItem }) {
             </figure>
           )}
           {item.text && <p className="st-text">{item.text}</p>}
-          {'action' in item && item.action?.run === 'checkin' && (
+          {'action' in item && item.action?.run === 'checkin' && !checkInDone && (
             <Button size="compact" intent="secondary" onPress={() => push({ id: `ci-${Date.now()}`, at: new Date().toISOString(), role: 'system', kind: 'checkin' })}>
               {item.action.label}
             </Button>
@@ -293,18 +295,43 @@ function LogConfirm({ reply }: { reply: NastraReply }) {
 }
 
 function DailyCheckIn({ item }: { item: Extract<ChatItem, { kind: 'checkin' }> }) {
-  const { submitCheckIn } = useStation();
+  const { submitCheckIn, markItem } = useStation();
+  const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const QUESTIONS = [
+    { id: 'mood', label: 'Mood', options: [{ id: 'low', label: 'Low' }, { id: 'steady', label: 'Steady' }, { id: 'good', label: 'Good' }] },
+    { id: 'stress', label: 'Stress', options: [{ id: 'low', label: 'Low' }, { id: 'moderate', label: 'Moderate' }, { id: 'high', label: 'High' }] },
+    { id: 'fatigue', label: 'Fatigue', options: [{ id: 'low', label: 'Low' }, { id: 'moderate', label: 'Moderate' }, { id: 'high', label: 'High' }] },
+  ];
+  // Saved: the form is replaced by a one-line record, so it can't be submitted twice.
+  if (item.done) {
+    return (
+      <p className="st-event" role="status">
+        <Glyph name="step-completed" size={16} /> Daily check-in saved{item.summary ? ` · ${item.summary}` : ''}
+      </p>
+    );
+  }
+  const label = (q: string, a?: string) => QUESTIONS.find((x) => x.id === q)?.options.find((o) => o.id === a)?.label;
   return (
-    <CheckIn
-      title="Daily check-in"
-      visibilityNote="Self-reported. Visible to you, NASTRA and your flight surgeon. NASTRA never infers mood from your voice or face."
-      questions={[
-        { id: 'mood', label: 'Mood', options: [{ id: 'low', label: 'Low' }, { id: 'steady', label: 'Steady' }, { id: 'good', label: 'Good' }] },
-        { id: 'stress', label: 'Stress', options: [{ id: 'low', label: 'Low' }, { id: 'moderate', label: 'Moderate' }, { id: 'high', label: 'High' }] },
-        { id: 'fatigue', label: 'Fatigue', options: [{ id: 'low', label: 'Low' }, { id: 'moderate', label: 'Moderate' }, { id: 'high', label: 'High' }] },
-      ]}
-      onSubmit={(answers, note) => { void submitCheckIn(answers, note); void item; }}
-    />
+    <>
+      <CheckIn
+        title="Daily check-in"
+        visibilityNote="Self-reported. Visible to you, NASTRA and your flight surgeon. NASTRA never infers mood from your voice or face."
+        questions={QUESTIONS}
+        onSubmit={async (answers, note) => {
+          if (saving) return;
+          setSaving(true); setError(null);
+          try {
+            await submitCheckIn(answers, note);
+            const summary = QUESTIONS.map((q) => label(q.id, answers[q.id]) && `${q.label} ${label(q.id, answers[q.id])!.toLowerCase()}`).filter(Boolean).join(' · ');
+            markItem(item.id, { done: true, summary } as Partial<ChatItem>);
+          } catch (e) {
+            setError(`Not saved: ${(e as Error).message}. Try again.`);
+          } finally { setSaving(false); }
+        }}
+      />
+      {error && <p className="st-event is-safety" role="alert">{error}</p>}
+    </>
   );
 }
 

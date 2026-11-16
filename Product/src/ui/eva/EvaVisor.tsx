@@ -291,6 +291,8 @@ export function EvaVisor() {
       </div>
 
       <div className="eva__vignette" aria-hidden="true" />
+      {/* Disclosure: always visible, including with UI hidden (H), so recordings carry it too. */}
+      <p className="eva__credit">Visor footage: AI-generated (Seedance 2.5). HUD and data: NASTRA prototype.</p>
       <p className="eva__sr" aria-live="polite">{live}</p>
 
       {/* Device controls: screen space, outside the glass. */}

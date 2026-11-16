@@ -214,3 +214,15 @@ body::before {
 .st-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 /* Source links: 24px target (WCAG 2.5.8). */
 .st-sources li a { display: inline-block; min-height: 24px; line-height: 24px; }
+
+/* ── Layout containment: the dashboard frame must never move. `clip` (unlike `hidden`) cannot be
+   scrolled by focus() or scrollIntoView(), so selecting a chip can't push the whole page down. */
+html, body { overflow: clip; }
+.st-shell { overflow: clip; }
+.st-main:has(.st-overview), .st-main:has(.st-page--fill) { overflow: clip; }
+.st-overview, .st-conversation { overflow: clip; }
+
+/* ── History → Alerts: NHIS sets display:flex on the actions <td>, which pulls it out of the table
+   row (17px tall in a 65px row), so its separator sits at a different height. Keep it a table cell. */
+.nhis-alert-table__actions { display: table-cell; text-align: right; white-space: nowrap; vertical-align: middle; }
+.nhis-alert-table__actions > * + * { margin-left: var(--nhis-primitive-space-1); }

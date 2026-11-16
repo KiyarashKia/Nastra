@@ -4,16 +4,17 @@ import '@nastra/nhis/fonts.css';
 import '@nastra/nhis/styles.css';
 import './station.css';
 import './spectre-skin.css';
-import { StationShell } from '@/ui/StationShell';
 
-export const metadata: Metadata = { title: { default: 'NASTRA Station', template: '%s · NASTRA Station' }, description: 'Astronaut health copilot. Simulation build.' };
+export const metadata: Metadata = {
+  title: { default: 'NASTRA', template: '%s · NASTRA' },
+  description: 'Astronaut Intelligent Health Copilot. Simulation build.',
+};
 
+/** Root: shared tokens and fonts only. Each mode (Station, EVA) brings its own shell. */
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
-      <body>
-        <StationShell>{children}</StationShell>
-      </body>
+      <body>{children}</body>
     </html>
   );
 }

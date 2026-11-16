@@ -221,7 +221,7 @@ function AssessmentBlock({ reply }: { reply: NastraReply }) {
         confidence={a.confidence}
         recommendedAction={a.recommendedAction}
         evidence={a.evidence}
-        onOpenProtocol={() => router.push('/protocol')}
+        onOpenProtocol={() => router.push('/station/protocol')}
         onCorrect={() => { composer.setDraft('More context: '); composer.focus(); }}
         onEscalate={() => void escalate('flight_surgeon')}
       />
@@ -267,7 +267,7 @@ function SafetyEvent({ reply }: { reply: NastraReply }) {
         Deterministic safety rule · model not used for this decision · {reply.protocol?.code} {reply.protocol?.title}
         {reply.followup ? ' · same escalated event, no new alert sent' : reply.alert && (reply.alert.delivered ? ' · flight surgeon alert sent' : ' · ALERT NOT DELIVERED — use the voice loop')}
       </p>
-      <Button size="compact" intent="secondary" icon="list" onPress={() => router.push('/protocol')}>Open protocol {reply.protocol?.code}</Button>
+      <Button size="compact" intent="secondary" icon="list" onPress={() => router.push('/station/protocol')}>Open protocol {reply.protocol?.code}</Button>
     </section>
   );
 }

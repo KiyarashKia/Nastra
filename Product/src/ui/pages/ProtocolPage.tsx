@@ -23,7 +23,7 @@ export function ProtocolPage() {
       {!a ? (
         <section className="st-card st-fill-none">
           <p className="st-text">No protocol is active. If something feels off, tell NASTRA on the Overview and the right protocol starts from your report.</p>
-          <Button intent="secondary" onPress={() => router.push('/overview')}>Go to Overview</Button>
+          <Button intent="secondary" onPress={() => router.push('/station/overview')}>Go to Overview</Button>
         </section>
       ) : (
         <div className="st-protocol st-fill">

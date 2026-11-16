@@ -53,7 +53,7 @@ export function OverviewPage() {
         {active.slice(0, 1).map((a) => (
           <AlertBanner key={a.id} alert={toNhisAlert(a)}
             onAcknowledge={(x) => void ackAlert(x.id)} onSuppress={(x) => void suppressAlert(x.id)}
-            onOpenProtocol={() => router.push('/protocol')}>
+            onOpenProtocol={() => router.push('/station/protocol')}>
           </AlertBanner>
         ))}
         {active.length > 1 && (
@@ -69,7 +69,7 @@ export function OverviewPage() {
                 </li>
               ))}
             </ul>
-            <Link className="st-link nhis-focus-ring" href="/history?view=alerts">All alerts in History</Link>
+            <Link className="st-link nhis-focus-ring" href="/station/history?view=alerts">All alerts in History</Link>
           </Disclosure>
         )}
 

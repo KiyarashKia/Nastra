@@ -8,10 +8,10 @@ import { StationProvider, toNhisAlert, useStation } from './station-context';
 import { NavIcon, type NavKey } from './icons';
 
 const NAV: { key: NavKey; href: string; label: string }[] = [
-  { key: 'overview', href: '/overview', label: 'Overview' },
-  { key: 'telemetry', href: '/telemetry', label: 'Telemetry' },
-  { key: 'history', href: '/history', label: 'History' },
-  { key: 'protocol', href: '/protocol', label: 'Protocol' },
+  { key: 'overview', href: '/station/overview', label: 'Overview' },
+  { key: 'telemetry', href: '/station/telemetry', label: 'Telemetry' },
+  { key: 'history', href: '/station/history', label: 'History' },
+  { key: 'protocol', href: '/station/protocol', label: 'Protocol' },
 ];
 
 export function StationShell({ children }: { children: ReactNode }) {
@@ -54,7 +54,7 @@ function ShellInner({ children }: { children: ReactNode }) {
             link={{ state: 'connected', delayLabel: status.linkDelayLabel }}
             alerts={alerts}
             escalation={{ state: esc?.state ?? 'draft', recipient: esc && esc.state !== 'draft' ? esc.target : 'flight_surgeon', onEscalate: () => setEscalationOpen(true) }}
-            onOpenAlerts={() => router.push('/history?view=alerts')}
+            onOpenAlerts={() => router.push('/station/history?view=alerts')}
           />
         ) : (
           <header className="st-header-placeholder" aria-busy="true">
@@ -73,6 +73,10 @@ function ShellInner({ children }: { children: ReactNode }) {
               </Link>
             );
           })}
+          <Link href="/" className="st-nav__item st-nav__modes nhis-focus-ring" aria-label="Modes: back to mode select">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><rect x="3" y="3" width="6" height="6" stroke="currentColor" strokeWidth="1.5"/><rect x="11" y="3" width="6" height="6" stroke="currentColor" strokeWidth="1.5"/><rect x="3" y="11" width="6" height="6" stroke="currentColor" strokeWidth="1.5"/><rect x="11" y="11" width="6" height="6" stroke="currentColor" strokeWidth="1.5"/></svg>
+            <span>Modes</span>
+          </Link>
         </nav>
 
         <main className="st-main">{children}</main>
@@ -101,7 +105,7 @@ function ShellInner({ children }: { children: ReactNode }) {
           isOpen
           observations={<p className="st-dialog-text">{overview?.escalation.state !== 'draft' ? `Handover sent: ${overview?.escalation.headline ?? 'flight surgeon alerted'}.` : 'Flight surgeon alert pending.'}</p>}
           onAcknowledge={(a) => void ackAlert(a.id)}
-          onOpenProtocol={(a) => { void ackAlert(a.id); router.push('/protocol'); }}
+          onOpenProtocol={(a) => { void ackAlert(a.id); router.push('/station/protocol'); }}
         />
       )}
       <EscalationPanel isOpen={escalationOpen} onClose={() => setEscalationOpen(false)} />

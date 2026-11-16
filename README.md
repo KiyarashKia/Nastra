@@ -8,7 +8,7 @@
 
 Health context that lives onboard, for when Earth is too far to answer in time.
 
-[**Live demo**](https://nastra-kappa.vercel.app/) · [How it works](#one-sentence-seven-layers) · [How we built it](#how-we-built-it) · [Safety model](#safety-lives-outside-the-model) · [Run it](#run-it-locally)
+[**Live demo**](https://nastra-kappa.vercel.app/) · [How it works](#one-sentence-seven-layers) · [How we built it](#how-we-built-it) · [Sources](#sources-and-what-they-changed) · [Safety model](#safety-lives-outside-the-model) · [Run it](#run-it-locally)
 
 Built by **Maple One** for the NASA Space Apps Challenge 2026
 
@@ -24,7 +24,7 @@ Built by **Maple One** for the NASA Space Apps Challenge 2026
 
 A crew member says this on day 34 of a long mission.
 
-On the ISS, a flight surgeon is a call away. On the way to Mars, they are not. A crewed Mars mission would last roughly three years, and every message to Earth comes back minutes later. Care that waits for a reply is care that arrives late.
+On the ISS, a flight surgeon is a call away. On the way to Mars, they are not. A crewed Mars mission would last roughly three years (Canadian Space Agency [CSA], 2025; National Aeronautics and Space Administration [NASA], 2026b). On the surface, one message to Earth can take more than 20 minutes each way (Wu, 2025). Care that waits for a reply is care that arrives late.
 
 The data to understand that sentence already exists. Heart rate, sleep, stress, the workout an hour ago, the EVA tomorrow, two similar episodes last month. It just lives in different places, and nothing joins it at the moment a symptom appears.
 
@@ -139,11 +139,15 @@ The question was never "what can an LLM do for astronauts?" It was: when a crew 
 
 The answer was context. The physiology, the psychology, the mission schedule and the history, joined into one picture. The AI is the last piece, not the first.
 
+NASA frames spaceflight risk as five hazards: radiation, isolation and confinement, distance from Earth, gravity fields, and hostile, closed environments (NASA, 2026a). We read all five, and one of them decided the product. Distance from Earth is why NASTRA is built for onboard use first, and why every escalation shows a link delay (Wu, 2025). The other four became the mission-context fields the system carries with every event.
+
 ### 2. Data first, honestly simulated
 
 We have no astronaut data, and nobody outside a mission does. So we simulated it, and we say so on every screen.
 
-The schema lives in Supabase (Postgres). 21 days for three crew members, modelled on the CSA Bio-Monitor channels: heart rate, HRV, SpO2, breathing, skin temperature, blood pressure, plus sleep, mood check-ins, mission events and cabin air. One deterministic generator, so the same anchor always produces the same mission.
+The schema lives in Supabase (Postgres). 21 days for three crew members, modelled on the CSA Bio-Monitor channels (CSA, n.d.): heart rate, HRV, SpO2, breathing, skin temperature, blood pressure, plus sleep, mood check-ins, mission events and cabin air. One deterministic generator, so the same anchor always produces the same mission.
+
+The sleep, mood, stress and activity records follow the fields in NASA's Spaceflight Standard Measures (NASA, n.d.). That was a design choice, not a validation. Checking our model against the standard is on the next list.
 
 Every read is a named SQL function: deviation from baseline, the comparison at the same minutes after exercise, the series, the transcript. Why SQL functions? They are auditable, they run the same in the cloud and offline (PGlite runs the identical migrations in-process for tests), and they give the model nothing to query directly.
 
@@ -155,7 +159,7 @@ The model's first job is narrow: read one message and fill a fixed form. Speech 
 
 Then code takes over. A router picks the action (answer, protocol, follow-up, escalate), and a protocol engine runs the approved steps. The model's second job is to write the explanation, from evidence that code already chose.
 
-We first ran a small Qwen model (28 / 28 on our eval). We switched to Gemma 4 26B A4B because the hackathon asks for no China affiliation, and because Gemma is open weights. It is a mixture of experts: 26B parameters stored, about 4B active per token, so it runs close to a small model while understanding like a larger one. It reads images too, so one model covers text and photos.
+We first ran a small Qwen model (28 / 28 on our eval). We switched to Gemma 4 26B A4B because the hackathon asks for no China affiliation, and because Gemma is open weights under Apache 2.0. It is a mixture of experts with 25.2B parameters stored and 3.8B active per token (Google DeepMind, n.d.), so it runs close to a small model while understanding like a larger one. It reads images too, so one model covers text and photos.
 
 ### 4. The day it failed
 
@@ -167,7 +171,9 @@ That day shaped the whole safety model. The red-flag screen now runs before any 
 
 ### 5. Grounded in NASA sources
 
-The model is not allowed to rely on what it remembers. We took a dated snapshot of six NASA Human Research Program risk pages, split them into 18 chunks, and embedded them locally with gte-small through Transformers.js.
+The model is not allowed to rely on what it remembers. We took a dated snapshot of six NASA Human Research Program risk pages, split them into 18 chunks, and embedded them locally with gte-small (Li et al., 2023) through Transformers.js. The pages come from NASA's Risks of Human Spaceflight index (NASA, 2026b).
+
+Those pages describe research risks. They are not clinical protocols, so NASTRA never presents them as treatment steps. They give context and evidence. The approved protocol decides what the crew member is asked to do.
 
 Retrieval filters by the tags the active protocol allows first, then ranks by vector similarity in pgvector. Why filter first? A dizziness protocol should only ever see vestibular and related evidence, however similar some other text looks. Every answer and every surgeon brief carries the source link. On our knowledge test, every query lands on the right risk page (7 / 7).
 
@@ -177,11 +183,15 @@ The first escalation only said "answered yes to the warning-signs check." That i
 
 Now code builds the brief: the trigger in the crew member's own words, the complaint, flagged data with numbers (heart rate +16 against their own post-exercise usual, three short nights, stress 4 of 5, two past dizziness episodes, EVA in 40 hours), the full conversation, and the model's reading labelled unverified. Built in code, so an emergency handover never waits on an API or contains a guess.
 
+The idea behind it comes from NASA's longitudinal health surveillance brief (NASA Office of the Chief Health and Medical Officer [OCHMO], 2023). Tracking crew health over time is why every event is logged with its outcome, and why the history can be searched for similar episodes later.
+
 ### 7. A station you can read in one glance
 
 NASTRA Station runs on NHIS, our own design system: React Aria for accessible primitives, Atkinson Hyperlegible for type, tokens with automated contrast checks. On top, a Spectre-style skin gives it the instrument-panel look: square corners, mono labels, HUD brackets. Cyan is used only for structure, so alert colours always mean alerts.
 
 The rule was one screen, no scroll, from 1280 x 720 up. When space runs out, lower-value detail gives way first. The "association, not causation" caveat never does. Every page passes axe-core WCAG 2.2 AA with zero violations, including mid-escalation.
+
+Two outside references shaped this screen. NIST's usability work on health records (Lowry et al., 2012) is why the crew member's identity is always visible in the header. The Web Content Accessibility Guidelines 2.2 (World Wide Web Consortium [W3C], 2023) set the bar we tested against: level AA.
 
 ### 8. Bugs only real runs could find
 
@@ -225,20 +235,27 @@ NASTRA deploys to Vercel straight from this repo, with data on Supabase. Keys st
 
 ---
 
-## NASA and CSA resources
+## Sources, and what they changed
 
-| Resource | How NASTRA uses it |
-|---|---|
-| [NASA HRP, Risks of Human Spaceflight](https://www.nasa.gov/hrp/risks/) | Six risk pages ingested, searched live and cited in every answer and in the surgeon brief |
-| [NASA, 5 Hazards of Human Spaceflight](https://www.nasa.gov/hrp/hazards/) | Mission-context framing, and the Earth link delay shown in every escalation |
-| [NASA, Ongoing HRP Research](https://www.nasa.gov/hrp/ongoing-hrp-research/) | Precedent for long-duration crew health work |
-| [CSA, Monitoring radiation for astronaut health](https://www.asc-csa.gc.ca/eng/news/articles/2026/2026-02-26-monitoring-radiation-astronaut-health.asp) | Radiation as mission context |
-| [CSA, Why do we conduct science experiments in space?](https://www.asc-csa.gc.ca/eng/iss/science/why-do-we-conduct-science-experiments-in-space.asp) | Long-mission framing |
-| CSA Bio-Monitor | The channel model behind the simulated vitals |
-| NASA-STD-3001, OCHMO Longitudinal Health Surveillance | Logging and handover design |
-| NISTIR 7804 | Crew identification is always visible |
+We were asked to use NASA data. We wanted to use it where it changes decisions, not as decoration. Direct means the source is ingested, searched at runtime and cited on screen. Indirect means it shaped the design, the data or the rules.
 
-The full map of sources lives in the project docs.
+| Source | Use | What it changed in NASTRA |
+|---|---|---|
+| NASA, Risks of Human Spaceflight (NASA, 2026b) | Direct | Six risk pages became 18 searchable chunks, cited with a link in every answer and in the surgeon brief. Their tags decide what each protocol is allowed to retrieve. |
+| NASA, 5 Hazards of Human Spaceflight (NASA, 2026a) | Indirect | The five hazards became mission-context fields. Distance from Earth set the onboard-first design. |
+| NASA, Ongoing HRP Research (NASA, 2026c) | Indirect | Precedent for joining crew health data in one place (Artemis II well-being and sleep studies, a telemedicine device). It shaped the pitch, not the code. |
+| NASA, Spaceflight Standard Measures (NASA, n.d.) | Indirect | The simulated sleep, mood, stress and activity records follow its fields. Validating against it is next. |
+| NASA-STD-3001 Vol. 1 (NASA, 2023) and the OCHMO surveillance brief (OCHMO, 2023) | Indirect | The rule that no absolute number enters without a source. So NASTRA compares you only with your own baseline. The brief shaped outcome logging and history. |
+| CSA, Bio-Monitor (CSA, n.d.) | Indirect | The channel model for the simulated vitals: heart rate, HRV, SpO2, breathing, skin temperature and blood pressure. It is also why our demo crew member is a CSA flight engineer. |
+| CSA, Monitoring radiation for astronaut health (CSA, 2026) | Indirect | Radiation exists as a mission-context field. There are no dose thresholds in the prototype. |
+| CSA, Why do we conduct science experiments in space? (CSA, 2025) | Indirect | The framing: longer missions mean more isolation and less access to emergency care. It shaped the story, not the code. |
+| Wu (2025), Earth independent operations | Indirect | Communication delay beyond low Earth orbit. Escalation shows sent and received times after a simulated link delay (2.6 s round trip here, far shorter than a real Mars delay). |
+| NIST IR 7804 (Lowry et al., 2012) | Indirect | Crew identity stays visible on every screen. |
+| WCAG 2.2 (W3C, 2023) | Indirect | The AA target, contrast checks in our design tokens, and axe-core audits on all pages. |
+| Gemma 4 model card (Google DeepMind, n.d.) | Indirect | The reason we chose 26B A4B: open weights, mixture of experts, image input. The edge sizes (E2B, E4B) give EVA a path to real hardware. |
+| Whisper (Radford et al., 2022) and gte-small (Li et al., 2023) | Indirect | Speech to text and embeddings both run on the local machine. |
+
+This is not a full literature review. It is the set we leaned on. No clinical threshold was taken from any of these pages.
 
 ---
 
@@ -247,8 +264,8 @@ The full map of sources lives in the project docs.
 | Layer | Technology |
 |---|---|
 | App | Next.js 16 (App Router), React 19, TypeScript, Zod 4 |
-| Model | Gemma 4 26B A4B (Google, open weights, Apache 2.0) via OpenRouter, behind one OpenAI-compatible interface, so going local (for example Ollama) is a config change |
-| Local ML | Transformers.js: Whisper tiny.en for speech-to-text, gte-small for embeddings |
+| Model | Gemma 4 26B A4B (Google DeepMind, open weights, Apache 2.0; Google DeepMind, n.d.) via OpenRouter, behind one OpenAI-compatible interface, so going local (for example Ollama) is a config change |
+| Local ML | Transformers.js: Whisper tiny.en for speech-to-text (Radford et al., 2022), gte-small for embeddings (Li et al., 2023) |
 | Data | Supabase (Postgres, pgvector, RLS, SQL read models); PGlite for offline runs and tests |
 | Design system | NHIS, our own: React Aria, Atkinson Hyperlegible, design tokens with contrast checks, a Spectre-style FUI skin |
 | EVA | Canvas 2D, HTML5 video, SVG displacement map, CSS clip-path |
@@ -332,6 +349,44 @@ Nastra/
 ## What's next
 
 Ingest the other challenge resources directly, validate against NASA Standard Measures, and move inference onboard with a local Gemma.
+
+---
+
+## References
+
+Canadian Space Agency. (n.d.). *Bio-Monitor: Keeping an eye on astronauts' vital signs*. https://www.asc-csa.gc.ca/eng/sciences/bio-monitor.asp
+
+Canadian Space Agency. (2025). *Why do we conduct science experiments in space?* https://www.asc-csa.gc.ca/eng/iss/science/why-do-we-conduct-science-experiments-in-space.asp
+
+Canadian Space Agency. (2026, February 26). *Monitoring radiation for astronaut health*. https://www.asc-csa.gc.ca/eng/news/articles/2026/2026-02-26-monitoring-radiation-astronaut-health.asp
+
+Google DeepMind. (n.d.). *Gemma 4 model card*. Google AI for Developers. https://ai.google.dev/gemma/docs/core/model_card_4
+
+Li, Z., Zhang, X., Zhang, Y., Long, D., Xie, P., & Zhang, M. (2023). *Towards general text embeddings with multi-stage contrastive learning* (arXiv:2308.03281). arXiv. https://arxiv.org/abs/2308.03281
+
+Lowry, S. Z., Quinn, M. T., Ramaiah, M., Schumacher, R. M., Patterson, E. S., North, R., Zhang, J., Gibbons, M. C., & Abbott, P. (2012). *Technical evaluation, testing, and validation of the usability of electronic health records* (NIST IR 7804). National Institute of Standards and Technology. https://doi.org/10.6028/NIST.IR.7804
+
+Maple One. (2026). *NASTRA: Astronaut intelligent health copilot* [Source code]. GitHub. https://github.com/KiyarashKia/Nastra
+
+NASA Office of the Chief Health and Medical Officer. (2023). *Longitudinal health surveillance technical brief*. National Aeronautics and Space Administration. https://www.nasa.gov/wp-content/uploads/2023/03/longitudinal-health-surveillance-technical-brief-ochmo.pdf
+
+National Aeronautics and Space Administration. (n.d.). *Spaceflight standard measures*. https://www.nasa.gov/reference/standard-measures/
+
+National Aeronautics and Space Administration. (2023). *NASA space flight human-system standard: Volume 1, revision C: Crew health* (NASA-STD-3001, Vol. 1, Rev. C). https://standards.nasa.gov/sites/default/files/standards/NASA/C//nasa-std-3001-vol-1-rev-c-signature.pdf
+
+National Aeronautics and Space Administration. (2026a). *5 hazards of human spaceflight*. https://www.nasa.gov/hrp/hazards/
+
+National Aeronautics and Space Administration. (2026b). *Risks of human spaceflight*. https://www.nasa.gov/hrp/risks/
+
+National Aeronautics and Space Administration. (2026c). *Ongoing HRP research*. https://www.nasa.gov/hrp/ongoing-hrp-research/
+
+Radford, A., Kim, J. W., Xu, T., Brockman, G., McLeavey, C., & Sutskever, I. (2022). *Robust speech recognition via large-scale weak supervision* (arXiv:2212.04356). arXiv. https://arxiv.org/abs/2212.04356
+
+World Wide Web Consortium. (2023). *Web content accessibility guidelines (WCAG) 2.2*. https://www.w3.org/TR/WCAG22/
+
+Wu, S.-C. (2025, April 29). *When Earth is a pale blue dot: Human-systems integration challenges and opportunities in Earth independent operations* [Conference presentation]. Ames Partnership Days. https://ntrs.nasa.gov/citations/20250004208
+
+The six HRP risk pages ingested into NASTRA (snapshot retrieved 14 November 2026) are listed in `Product/knowledge/hrp_snapshot.json`.
 
 ---
 

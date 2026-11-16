@@ -5,21 +5,22 @@ export const tokenValues = {
   "primitive": {
     "color": {
       "neutral": {
-        "50": "#F6F7F8",
-        "100": "#E6E8EA",
-        "200": "#CBCED2",
-        "300": "#AEB1B6",
-        "350": "#A7ABB0",
-        "400": "#8E9398",
-        "500": "#70757C",
-        "600": "#54585F",
-        "700": "#3C4046",
-        "750": "#2D3136",
-        "800": "#24282D",
-        "850": "#1D2126",
-        "900": "#161A1E",
-        "950": "#101317",
-        "1000": "#0A0C10"
+        "50": "#E8EDF2",
+        "100": "#D5DCE4",
+        "200": "#B8C1CB",
+        "300": "#9EAAB5",
+        "350": "#93A0AC",
+        "400": "#7D8A96",
+        "500": "#67757F",
+        "600": "#4A5661",
+        "700": "#2B3640",
+        "750": "#1D2630",
+        "800": "#141B23",
+        "850": "#10161D",
+        "900": "#0A0F14",
+        "950": "#05080B",
+        "1000": "#020406",
+        "line": "#1B2733"
       },
       "red": {
         "fill": "#B7191C",
@@ -43,7 +44,12 @@ export const tokenValues = {
       "green": {
         "eva": "#67F373"
       },
-      "white": "#FFFFFF"
+      "white": "#FFFFFF",
+      "cyan": {
+        "400": "#38BDF8",
+        "400-a55": "#38BDF88C",
+        "400-a16": "#38BDF829"
+      }
     },
     "space": {
       "0": "0px",
@@ -90,9 +96,9 @@ export const tokenValues = {
     },
     "radius": {
       "none": "0px",
-      "sm": "2px",
-      "md": "4px",
-      "lg": "6px"
+      "sm": "0px",
+      "md": "0px",
+      "lg": "0px"
     },
     "borderWidth": {
       "1": "1px",
@@ -107,119 +113,125 @@ export const tokenValues = {
   },
   "color": {
     "surface": {
-      "canvas": "#101317",
-      "panel": "#161A1E",
-      "raised": "#1D2126",
-      "overlay": "#24282D",
+      "canvas": "#05080B",
+      "panel": "#0A0F14",
+      "raised": "#10161D",
+      "overlay": "#141B23",
       "scrim": "#0A0C10CC",
-      "critical": "#0A0C10"
+      "critical": "#020406"
     },
     "text": {
-      "primary": "#F6F7F8",
-      "secondary": "#CBCED2",
-      "muted": "#A7ABB0",
-      "disabled": "#70757C",
-      "inverse": "#101317",
-      "onAlert": "#F6F7F8"
+      "primary": "#E8EDF2",
+      "secondary": "#B8C1CB",
+      "muted": "#93A0AC",
+      "disabled": "#67757F",
+      "inverse": "#05080B",
+      "onAlert": "#FFFFFF"
     },
     "border": {
-      "subtle": "#2D3136",
-      "control": "#70757C",
-      "strong": "#AEB1B6",
-      "focus": "#F6F7F8",
-      "focusHalo": "#0A0C10"
+      "subtle": "#1B2733",
+      "control": "#67757F",
+      "strong": "#9EAAB5",
+      "focus": "#38BDF8",
+      "focusHalo": "#020406"
     },
     "interactive": {
       "primary": {
-        "background": "#E6E8EA",
-        "backgroundHover": "#F6F7F8",
-        "backgroundPressed": "#CBCED2",
-        "text": "#101317"
+        "background": "#D5DCE4",
+        "backgroundHover": "#E8EDF2",
+        "backgroundPressed": "#B8C1CB",
+        "text": "#05080B"
       },
       "secondary": {
-        "background": "#1D2126",
-        "backgroundHover": "#24282D",
-        "backgroundPressed": "#2D3136",
-        "text": "#F6F7F8"
+        "background": "#10161D",
+        "backgroundHover": "#141B23",
+        "backgroundPressed": "#1D2630",
+        "text": "#E8EDF2"
       },
       "quiet": {
-        "backgroundHover": "#24282D",
-        "backgroundPressed": "#2D3136",
-        "text": "#E6E8EA"
+        "backgroundHover": "#141B23",
+        "backgroundPressed": "#1D2630",
+        "text": "#D5DCE4"
       },
       "selected": {
-        "background": "#2D3136",
-        "indicator": "#F6F7F8"
+        "background": "#1D2630",
+        "indicator": "#38BDF8"
       }
     },
     "status": {
       "nominal": {
-        "text": "#CBCED2",
-        "stroke": "#2D3136"
+        "text": "#B8C1CB",
+        "stroke": "#1B2733"
       },
       "advisory": {
         "fill": "#1D5AB0",
         "stroke": "#64A1EE",
         "tint": "#182536",
-        "onFill": "#F6F7F8"
+        "onFill": "#FFFFFF"
       },
       "caution": {
         "fill": "#EDC812",
         "stroke": "#EDC812",
         "tint": "#302F1D",
-        "onFill": "#101317"
+        "onFill": "#05080B"
       },
       "warning": {
         "fill": "#B7191C",
         "stroke": "#E64343",
         "tint": "#301A1E",
-        "onFill": "#F6F7F8"
+        "onFill": "#FFFFFF"
       },
       "emergency": {
         "fill": "#B7191C",
         "stroke": "#E64343",
         "tint": "#301A1E",
-        "onFill": "#F6F7F8"
+        "onFill": "#FFFFFF"
       }
     },
     "data": {
-      "live": "#F6F7F8",
-      "degradedText": "#F6F7F8",
-      "degradedStroke": "#AEB1B6",
-      "hatch": "#3C4046",
-      "label": "#CBCED2"
+      "live": "#E8EDF2",
+      "degradedText": "#E8EDF2",
+      "degradedStroke": "#9EAAB5",
+      "hatch": "#2B3640",
+      "label": "#B8C1CB"
     },
     "mode": {
       "simulation": {
         "fill": "#7A41AF",
         "stroke": "#B88FE6",
         "tint": "#262035",
-        "onFill": "#F6F7F8"
+        "onFill": "#FFFFFF",
+        "frame": "#B88FE673"
       }
     },
     "hazard": {
       "stripeLight": "#EDC812",
-      "stripeDark": "#0A0C10"
+      "stripeDark": "#020406"
     },
     "viz": {
-      "live": "#F6F7F8",
-      "historical": "#AEB1B6",
-      "baselineBand": "#2D3136",
-      "baselineEdge": "#8E9398",
-      "grid": "#24282D",
-      "axis": "#A7ABB0",
-      "gap": "#3C4046",
+      "live": "#E8EDF2",
+      "historical": "#9EAAB5",
+      "baselineBand": "#1D2630",
+      "baselineEdge": "#7D8A96",
+      "grid": "#141B23",
+      "axis": "#93A0AC",
+      "gap": "#2B3640",
       "limitCaution": "#EDC812",
       "limitWarning": "#E64343"
     },
     "brand": {
-      "logoBackground": "#101317"
+      "logoBackground": "#05080B"
     },
     "eva": {
       "text": "#FFFFFF",
       "textGreen": "#67F373",
       "plate": "#0A0C10B3",
       "alertFill": "#B7191C"
+    },
+    "structure": {
+      "accent": "#38BDF8",
+      "accentDim": "#38BDF88C",
+      "grid": "#38BDF829"
     }
   },
   "font": {
@@ -324,10 +336,10 @@ export const tokenValues = {
     "contentMax": "1600px"
   },
   "radius": {
-    "control": "4px",
-    "panel": "6px",
-    "tag": "2px",
-    "alert": "2px"
+    "control": "0px",
+    "panel": "0px",
+    "tag": "0px",
+    "alert": "0px"
   },
   "border": {
     "hairline": "1px",
@@ -421,7 +433,7 @@ export const tokenValues = {
     },
     "vitalTile": {
       "valueFontSize": "40px",
-      "baselineStroke": "#8E9398",
+      "baselineStroke": "#7D8A96",
       "sparklineHeight": "48px"
     },
     "evaWarning": {
@@ -452,7 +464,8 @@ export const cssVars = {
         "850": "var(--nhis-primitive-color-neutral-850)",
         "900": "var(--nhis-primitive-color-neutral-900)",
         "950": "var(--nhis-primitive-color-neutral-950)",
-        "1000": "var(--nhis-primitive-color-neutral-1000)"
+        "1000": "var(--nhis-primitive-color-neutral-1000)",
+        "line": "var(--nhis-primitive-color-neutral-line)"
       },
       "red": {
         "fill": "var(--nhis-primitive-color-red-fill)",
@@ -476,7 +489,12 @@ export const cssVars = {
       "green": {
         "eva": "var(--nhis-primitive-color-green-eva)"
       },
-      "white": "var(--nhis-primitive-color-white)"
+      "white": "var(--nhis-primitive-color-white)",
+      "cyan": {
+        "400": "var(--nhis-primitive-color-cyan-400)",
+        "400-a55": "var(--nhis-primitive-color-cyan-400-a55)",
+        "400-a16": "var(--nhis-primitive-color-cyan-400-a16)"
+      }
     },
     "space": {
       "0": "var(--nhis-primitive-space-0)",
@@ -627,7 +645,8 @@ export const cssVars = {
         "fill": "var(--nhis-color-mode-simulation-fill)",
         "stroke": "var(--nhis-color-mode-simulation-stroke)",
         "tint": "var(--nhis-color-mode-simulation-tint)",
-        "onFill": "var(--nhis-color-mode-simulation-on-fill)"
+        "onFill": "var(--nhis-color-mode-simulation-on-fill)",
+        "frame": "var(--nhis-color-mode-simulation-frame)"
       }
     },
     "hazard": {
@@ -653,6 +672,11 @@ export const cssVars = {
       "textGreen": "var(--nhis-color-eva-text-green)",
       "plate": "var(--nhis-color-eva-plate)",
       "alertFill": "var(--nhis-color-eva-alert-fill)"
+    },
+    "structure": {
+      "accent": "var(--nhis-color-structure-accent)",
+      "accentDim": "var(--nhis-color-structure-accent-dim)",
+      "grid": "var(--nhis-color-structure-grid)"
     }
   },
   "font": {
@@ -811,6 +835,7 @@ export type TokenPath =
   | 'primitive.color.neutral.900'
   | 'primitive.color.neutral.950'
   | 'primitive.color.neutral.1000'
+  | 'primitive.color.neutral.line'
   | 'primitive.color.red.fill'
   | 'primitive.color.red.stroke'
   | 'primitive.color.red.tint'
@@ -824,6 +849,9 @@ export type TokenPath =
   | 'primitive.color.violet.tint'
   | 'primitive.color.green.eva'
   | 'primitive.color.white'
+  | 'primitive.color.cyan.400'
+  | 'primitive.color.cyan.400-a55'
+  | 'primitive.color.cyan.400-a16'
   | 'primitive.space.0'
   | 'primitive.space.1'
   | 'primitive.space.2'
@@ -922,6 +950,7 @@ export type TokenPath =
   | 'color.mode.simulation.stroke'
   | 'color.mode.simulation.tint'
   | 'color.mode.simulation.onFill'
+  | 'color.mode.simulation.frame'
   | 'color.hazard.stripeLight'
   | 'color.hazard.stripeDark'
   | 'color.viz.live'
@@ -938,6 +967,9 @@ export type TokenPath =
   | 'color.eva.textGreen'
   | 'color.eva.plate'
   | 'color.eva.alertFill'
+  | 'color.structure.accent'
+  | 'color.structure.accentDim'
+  | 'color.structure.grid'
   | 'font.family.sans'
   | 'font.family.mono'
   | 'type.display'
@@ -1029,7 +1061,7 @@ export type TokenPath =
   | 'component.evaWarning.outlineWidth'
   | 'component.evaStatus.nominalOpacity';
 
-export const tokenPaths: readonly TokenPath[] = ["primitive.color.neutral.50","primitive.color.neutral.100","primitive.color.neutral.200","primitive.color.neutral.300","primitive.color.neutral.350","primitive.color.neutral.400","primitive.color.neutral.500","primitive.color.neutral.600","primitive.color.neutral.700","primitive.color.neutral.750","primitive.color.neutral.800","primitive.color.neutral.850","primitive.color.neutral.900","primitive.color.neutral.950","primitive.color.neutral.1000","primitive.color.red.fill","primitive.color.red.stroke","primitive.color.red.tint","primitive.color.yellow.fill","primitive.color.yellow.tint","primitive.color.blue.fill","primitive.color.blue.stroke","primitive.color.blue.tint","primitive.color.violet.fill","primitive.color.violet.stroke","primitive.color.violet.tint","primitive.color.green.eva","primitive.color.white","primitive.space.0","primitive.space.1","primitive.space.2","primitive.space.3","primitive.space.4","primitive.space.5","primitive.space.6","primitive.space.8","primitive.space.10","primitive.space.12","primitive.space.16","primitive.font.family.sans","primitive.font.family.mono","primitive.font.weight.regular","primitive.font.weight.medium","primitive.font.weight.semibold","primitive.font.weight.bold","primitive.font.size.100","primitive.font.size.200","primitive.font.size.300","primitive.font.size.400","primitive.font.size.500","primitive.font.size.600","primitive.font.size.700","primitive.font.lineHeight.100","primitive.font.lineHeight.200","primitive.font.lineHeight.300","primitive.font.lineHeight.400","primitive.font.lineHeight.500","primitive.font.lineHeight.600","primitive.font.lineHeight.700","primitive.radius.none","primitive.radius.sm","primitive.radius.md","primitive.radius.lg","primitive.borderWidth.1","primitive.borderWidth.2","primitive.borderWidth.3","primitive.duration.0","primitive.duration.100","primitive.duration.200","color.surface.canvas","color.surface.panel","color.surface.raised","color.surface.overlay","color.surface.scrim","color.surface.critical","color.text.primary","color.text.secondary","color.text.muted","color.text.disabled","color.text.inverse","color.text.onAlert","color.border.subtle","color.border.control","color.border.strong","color.border.focus","color.border.focusHalo","color.interactive.primary.background","color.interactive.primary.backgroundHover","color.interactive.primary.backgroundPressed","color.interactive.primary.text","color.interactive.secondary.background","color.interactive.secondary.backgroundHover","color.interactive.secondary.backgroundPressed","color.interactive.secondary.text","color.interactive.quiet.backgroundHover","color.interactive.quiet.backgroundPressed","color.interactive.quiet.text","color.interactive.selected.background","color.interactive.selected.indicator","color.status.nominal.text","color.status.nominal.stroke","color.status.advisory.fill","color.status.advisory.stroke","color.status.advisory.tint","color.status.advisory.onFill","color.status.caution.fill","color.status.caution.stroke","color.status.caution.tint","color.status.caution.onFill","color.status.warning.fill","color.status.warning.stroke","color.status.warning.tint","color.status.warning.onFill","color.status.emergency.fill","color.status.emergency.stroke","color.status.emergency.tint","color.status.emergency.onFill","color.data.live","color.data.degradedText","color.data.degradedStroke","color.data.hatch","color.data.label","color.mode.simulation.fill","color.mode.simulation.stroke","color.mode.simulation.tint","color.mode.simulation.onFill","color.hazard.stripeLight","color.hazard.stripeDark","color.viz.live","color.viz.historical","color.viz.baselineBand","color.viz.baselineEdge","color.viz.grid","color.viz.axis","color.viz.gap","color.viz.limitCaution","color.viz.limitWarning","color.brand.logoBackground","color.eva.text","color.eva.textGreen","color.eva.plate","color.eva.alertFill","font.family.sans","font.family.mono","type.display","type.heading","type.title","type.body","type.label","type.meta","type.action","type.telemetryPrimary","type.telemetrySecondary","type.tabular","space.componentCompact","space.componentDefault","space.panelPadding","space.panelPaddingLarge","space.stack","space.section","space.gutter","space.pageMargin","size.controlDefault","size.controlCompact","size.targetMin","size.iconSm","size.iconMd","size.iconLg","size.glyphAlert","size.headerHeight","size.stationViewportMinWidth","size.stationViewportMinHeight","size.contentMax","radius.control","radius.panel","radius.tag","radius.alert","border.hairline","border.control","border.emphasis","border.alert","border.focus","border.focusOffset","motion.duration.instant","motion.duration.feedback","motion.duration.transition","motion.easing.standard","flash.textLow.periodMs","flash.textLow.dutyCycle","flash.nontextHigh.periodMs","flash.nontextHigh.dutyCycle","flash.stopControlAfterMs.station","flash.stopControlAfterMs.eva","audio.annunciation.emergency","audio.annunciation.warning","audio.annunciation.caution","audio.annunciation.advisory","audio.preAlertAttenuationDb","audio.toneRangeHz","z.base","z.sticky","z.popover","z.tooltip","z.modal","z.alertDialog","z.emergency","eva.angle.clearZoneRadius","eva.angle.alertNearLosMax","eva.angle.masterAlertMin","eva.angle.warningMinAreaSqDeg","eva.angle.peripheryBelowHorizonMax","eva.angle.sustainedReadingAboveHorizonMax","eva.angle.textPrimary","eva.angle.textMovingMin","eva.angle.textStationaryFloor","eva.angle.displayDiagonalFov","eva.timing.dwellRevealMs","eva.timing.dwellFloorMs","eva.timing.glanceSingleMs","eva.timing.glanceCumulativeMs","eva.timing.minFrameRate","eva.content.maxProtocolSteps","eva.content.declutterLevels","eva.opacity.lowlight","eva.opacity.full","component.alert.borderWidth","component.alert.emergencyRing","component.vitalTile.valueFontSize","component.vitalTile.baselineStroke","component.vitalTile.sparklineHeight","component.evaWarning.outlineWidth","component.evaStatus.nominalOpacity"] as const;
+export const tokenPaths: readonly TokenPath[] = ["primitive.color.neutral.50","primitive.color.neutral.100","primitive.color.neutral.200","primitive.color.neutral.300","primitive.color.neutral.350","primitive.color.neutral.400","primitive.color.neutral.500","primitive.color.neutral.600","primitive.color.neutral.700","primitive.color.neutral.750","primitive.color.neutral.800","primitive.color.neutral.850","primitive.color.neutral.900","primitive.color.neutral.950","primitive.color.neutral.1000","primitive.color.neutral.line","primitive.color.red.fill","primitive.color.red.stroke","primitive.color.red.tint","primitive.color.yellow.fill","primitive.color.yellow.tint","primitive.color.blue.fill","primitive.color.blue.stroke","primitive.color.blue.tint","primitive.color.violet.fill","primitive.color.violet.stroke","primitive.color.violet.tint","primitive.color.green.eva","primitive.color.white","primitive.color.cyan.400","primitive.color.cyan.400-a55","primitive.color.cyan.400-a16","primitive.space.0","primitive.space.1","primitive.space.2","primitive.space.3","primitive.space.4","primitive.space.5","primitive.space.6","primitive.space.8","primitive.space.10","primitive.space.12","primitive.space.16","primitive.font.family.sans","primitive.font.family.mono","primitive.font.weight.regular","primitive.font.weight.medium","primitive.font.weight.semibold","primitive.font.weight.bold","primitive.font.size.100","primitive.font.size.200","primitive.font.size.300","primitive.font.size.400","primitive.font.size.500","primitive.font.size.600","primitive.font.size.700","primitive.font.lineHeight.100","primitive.font.lineHeight.200","primitive.font.lineHeight.300","primitive.font.lineHeight.400","primitive.font.lineHeight.500","primitive.font.lineHeight.600","primitive.font.lineHeight.700","primitive.radius.none","primitive.radius.sm","primitive.radius.md","primitive.radius.lg","primitive.borderWidth.1","primitive.borderWidth.2","primitive.borderWidth.3","primitive.duration.0","primitive.duration.100","primitive.duration.200","color.surface.canvas","color.surface.panel","color.surface.raised","color.surface.overlay","color.surface.scrim","color.surface.critical","color.text.primary","color.text.secondary","color.text.muted","color.text.disabled","color.text.inverse","color.text.onAlert","color.border.subtle","color.border.control","color.border.strong","color.border.focus","color.border.focusHalo","color.interactive.primary.background","color.interactive.primary.backgroundHover","color.interactive.primary.backgroundPressed","color.interactive.primary.text","color.interactive.secondary.background","color.interactive.secondary.backgroundHover","color.interactive.secondary.backgroundPressed","color.interactive.secondary.text","color.interactive.quiet.backgroundHover","color.interactive.quiet.backgroundPressed","color.interactive.quiet.text","color.interactive.selected.background","color.interactive.selected.indicator","color.status.nominal.text","color.status.nominal.stroke","color.status.advisory.fill","color.status.advisory.stroke","color.status.advisory.tint","color.status.advisory.onFill","color.status.caution.fill","color.status.caution.stroke","color.status.caution.tint","color.status.caution.onFill","color.status.warning.fill","color.status.warning.stroke","color.status.warning.tint","color.status.warning.onFill","color.status.emergency.fill","color.status.emergency.stroke","color.status.emergency.tint","color.status.emergency.onFill","color.data.live","color.data.degradedText","color.data.degradedStroke","color.data.hatch","color.data.label","color.mode.simulation.fill","color.mode.simulation.stroke","color.mode.simulation.tint","color.mode.simulation.onFill","color.mode.simulation.frame","color.hazard.stripeLight","color.hazard.stripeDark","color.viz.live","color.viz.historical","color.viz.baselineBand","color.viz.baselineEdge","color.viz.grid","color.viz.axis","color.viz.gap","color.viz.limitCaution","color.viz.limitWarning","color.brand.logoBackground","color.eva.text","color.eva.textGreen","color.eva.plate","color.eva.alertFill","color.structure.accent","color.structure.accentDim","color.structure.grid","font.family.sans","font.family.mono","type.display","type.heading","type.title","type.body","type.label","type.meta","type.action","type.telemetryPrimary","type.telemetrySecondary","type.tabular","space.componentCompact","space.componentDefault","space.panelPadding","space.panelPaddingLarge","space.stack","space.section","space.gutter","space.pageMargin","size.controlDefault","size.controlCompact","size.targetMin","size.iconSm","size.iconMd","size.iconLg","size.glyphAlert","size.headerHeight","size.stationViewportMinWidth","size.stationViewportMinHeight","size.contentMax","radius.control","radius.panel","radius.tag","radius.alert","border.hairline","border.control","border.emphasis","border.alert","border.focus","border.focusOffset","motion.duration.instant","motion.duration.feedback","motion.duration.transition","motion.easing.standard","flash.textLow.periodMs","flash.textLow.dutyCycle","flash.nontextHigh.periodMs","flash.nontextHigh.dutyCycle","flash.stopControlAfterMs.station","flash.stopControlAfterMs.eva","audio.annunciation.emergency","audio.annunciation.warning","audio.annunciation.caution","audio.annunciation.advisory","audio.preAlertAttenuationDb","audio.toneRangeHz","z.base","z.sticky","z.popover","z.tooltip","z.modal","z.alertDialog","z.emergency","eva.angle.clearZoneRadius","eva.angle.alertNearLosMax","eva.angle.masterAlertMin","eva.angle.warningMinAreaSqDeg","eva.angle.peripheryBelowHorizonMax","eva.angle.sustainedReadingAboveHorizonMax","eva.angle.textPrimary","eva.angle.textMovingMin","eva.angle.textStationaryFloor","eva.angle.displayDiagonalFov","eva.timing.dwellRevealMs","eva.timing.dwellFloorMs","eva.timing.glanceSingleMs","eva.timing.glanceCumulativeMs","eva.timing.minFrameRate","eva.content.maxProtocolSteps","eva.content.declutterLevels","eva.opacity.lowlight","eva.opacity.full","component.alert.borderWidth","component.alert.emergencyRing","component.vitalTile.valueFontSize","component.vitalTile.baselineStroke","component.vitalTile.sparklineHeight","component.evaWarning.outlineWidth","component.evaStatus.nominalOpacity"] as const;
 
 /** CSS custom-property name for a token path. */
 export function tokenVar(path: TokenPath): string {

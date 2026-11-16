@@ -1,0 +1,97 @@
+/* NASTRA EVA visor. HUD sizes are footage pixels (1918×1080); the glass plane scales with the footage. */
+.eva { --g: #8dffb0; --g-dim: rgba(141, 255, 176, 0.62); --g-line: rgba(141, 255, 176, 0.3); --plate: rgba(1, 12, 6, 0.5);
+  position: fixed; inset: 0; z-index: 5; overflow: hidden; background: #050706; color: var(--g); }
+.eva__view { position: fixed; inset: 0; width: 100%; height: 100%; touch-action: none; }
+.eva__defs { position: absolute; width: 1px; height: 1px; }
+.eva__optic {
+  position: fixed; left: 0; top: 0; width: 1918px; height: 1080px; z-index: 2; transform-origin: 0 0; pointer-events: none;
+  clip-path: polygon(12% 3%, 88% 3%, 96% 16%, 98% 39%, 95% 67%, 83% 89%, 66% 95%, 32% 95%, 14% 87%, 4% 67%, 2% 37%, 5% 16%);
+  opacity: 0; transition: opacity 900ms ease 300ms;
+}
+.eva.is-loaded .eva__optic { opacity: 1; }
+.eva__glass { position: absolute; inset: 0; }
+.eva__vignette { position: fixed; inset: 0; z-index: 3; pointer-events: none; box-shadow: inset 0 0 120px 20px rgba(0, 0, 0, 0.35); }
+
+/* ── HUD: projected phosphor CLI ─────────────────────────────────────────────────────── */
+.hud { position: absolute; inset: 0; font-family: var(--nhis-font-family-mono), 'Cascadia Mono', 'DejaVu Sans Mono', monospace;
+  font-size: 22px; line-height: 1.45; letter-spacing: 0.04em; white-space: pre;
+  text-shadow: 0 0 6px rgba(141, 255, 176, 0.55), 0 0 18px rgba(141, 255, 176, 0.18); }
+.hud p { margin: 0; }
+.hud__dim { color: var(--g-dim); }
+.hud__b { font-weight: 700; letter-spacing: 0.16em; }
+.hud__inv { background: var(--g); color: #021006; text-shadow: none; padding: 0 8px; font-weight: 700; }
+.hud__h { color: var(--g-dim); letter-spacing: 0.2em; margin-bottom: 4px !important; }
+
+.hud__bar { position: absolute; top: 92px; left: 50%; transform: translateX(-50%); display: flex; gap: 30px; align-items: center;
+  font-size: 19px; padding: 8px 20px; border-top: 1px solid var(--g-line); border-bottom: 1px solid var(--g-line); }
+.hud__bio { position: absolute; left: 300px; top: 190px; padding: 14px 18px; background: var(--plate); border-left: 2px solid var(--g); }
+
+/* Center reticle: four corner ticks and a dot. Hidden while a task panel is up. */
+.hud__reticle { position: absolute; left: 899px; top: 500px; width: 120px; height: 80px; opacity: 0.55;
+  --t: linear-gradient(var(--g), var(--g));
+  background: var(--t) top left / 18px 2px no-repeat, var(--t) top left / 2px 18px no-repeat, var(--t) top right / 18px 2px no-repeat, var(--t) top right / 2px 18px no-repeat,
+              var(--t) bottom left / 18px 2px no-repeat, var(--t) bottom left / 2px 18px no-repeat, var(--t) bottom right / 18px 2px no-repeat, var(--t) bottom right / 2px 18px no-repeat,
+              radial-gradient(circle, var(--g) 0 2.5px, transparent 3px) center / 8px 8px no-repeat; }
+.hud:has(.hud__panel) .hud__reticle, .hud:has(.hud__panel) .hud__bio { display: none; }
+
+.hud__panel { position: absolute; left: 440px; top: 210px; width: 1040px; padding: 22px 30px 24px; background: var(--plate);
+  border: 1px solid var(--g-line); box-shadow: inset 0 0 40px rgba(141, 255, 176, 0.05); animation: hud-on 420ms steps(1, end) both; }
+.hud__panel::before, .hud__panel::after { content: ''; position: absolute; width: 22px; height: 22px; border: 2px solid var(--g); }
+.hud__panel::before { left: -2px; top: -2px; border-right: 0; border-bottom: 0; }
+.hud__panel::after { right: -2px; bottom: -2px; border-left: 0; border-top: 0; }
+.hud__title { font-size: 20px; letter-spacing: 0.14em; padding-bottom: 10px; margin-bottom: 8px !important; border-bottom: 1px solid var(--g-line); }
+.hud__log p { color: var(--g-dim); }
+.hud__log p:last-of-type { color: var(--g); }
+.hud__table { border-collapse: collapse; width: 100%; margin: 4px 0 12px; font-size: 22px; }
+.hud__table th { text-align: left; font-weight: 400; color: var(--g-dim); font-size: 16px; letter-spacing: 0.16em; padding: 4px 18px 6px 0; }
+.hud__table td { padding: 3px 18px 3px 0; }
+.hud__table tr.is-flag td { color: #d9ffe4; font-weight: 700; }
+.hud__table tr.is-flag td:first-child::before { content: '›'; position: absolute; margin-left: -18px; }
+.hud__u { color: var(--g-dim); font-size: 16px; font-weight: 400; }
+.hud__spark { font-family: 'DejaVu Sans Mono', 'Cascadia Mono', monospace; letter-spacing: 0; font-size: 18px; }
+
+.hud__voice { position: absolute; left: 50%; top: 806px; transform: translateX(-50%); min-width: 860px; padding: 14px 26px; text-align: center;
+  background: var(--plate); border-top: 1px solid var(--g-line); border-bottom: 1px solid var(--g-line); font-size: 21px; }
+.hud__voice.is-listening { border-color: var(--g); }
+.hud__rec { display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: var(--g); vertical-align: 1px; animation: hud-blink 900ms steps(2, start) infinite; }
+.hud__wave { display: inline-flex; gap: 4px; align-items: center; height: 22px; margin-left: 10px; vertical-align: -3px; }
+.hud__wave i { width: 4px; height: 100%; background: var(--g); transform-origin: center; animation: hud-wave 700ms ease-in-out infinite alternate; }
+.hud__wave i:nth-child(2) { animation-delay: -120ms; } .hud__wave i:nth-child(3) { animation-delay: -380ms; } .hud__wave i:nth-child(4) { animation-delay: -60ms; }
+.hud__wave i:nth-child(5) { animation-delay: -500ms; } .hud__wave i:nth-child(6) { animation-delay: -240ms; } .hud__wave i:nth-child(7) { animation-delay: -420ms; }
+.hud__caret, .hud__cursor { animation: hud-blink 1s steps(2, start) infinite; }
+/* Faint scanlines: reads as projected light, not a flat sticker. */
+.hud__scan { position: absolute; inset: 0; pointer-events: none; opacity: 0.08;
+  background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.9) 0 1px, transparent 1px 4px); }
+
+@keyframes hud-on { 0% { opacity: 0; } 18% { opacity: 0.85; } 30% { opacity: 0.25; } 46% { opacity: 1; } 100% { opacity: 1; } }
+@keyframes hud-blink { to { visibility: hidden; } }
+@keyframes hud-wave { from { transform: scaleY(0.2); } to { transform: scaleY(1); } }
+
+/* ── Device controls (screen space) ─────────────────────────────────────────────────── */
+.eva__chrome { position: fixed; z-index: 6; top: max(20px, env(safe-area-inset-top)); left: 24px; right: 24px; display: flex; justify-content: space-between; pointer-events: none; transition: opacity 400ms ease; }
+.eva__chrome > * { pointer-events: auto; }
+.eva__right { display: flex; gap: 8px; }
+.eva__btn { display: inline-flex; align-items: center; gap: 8px; min-height: 32px; padding: 6px 12px; font: 12px/1 var(--nhis-font-family-mono); letter-spacing: 0.16em;
+  color: rgba(214, 255, 226, 0.85); text-decoration: none; background: rgba(0, 10, 5, 0.4); border: 1px solid var(--g-line); cursor: pointer;
+  transition: border-color 160ms ease, transform 160ms ease-out; }
+.eva__btn kbd { font: inherit; font-size: 11px; padding: 1px 5px; border: 1px solid var(--g-line); color: var(--g-dim); }
+.eva__btn:active, .eva__mic:active { transform: scale(0.97); }
+.eva__btn:focus-visible, .eva__mic:focus-visible { outline: 2px solid var(--g); outline-offset: 3px; }
+@media (hover: hover) and (pointer: fine) { .eva__btn:hover { border-color: var(--g); } .eva__mic:hover { border-color: var(--g); } }
+.eva__mic { position: fixed; z-index: 6; left: 50%; bottom: max(24px, env(safe-area-inset-bottom)); translate: -50% 0; width: 64px; height: 64px; border-radius: 50%;
+  display: grid; place-items: center; cursor: pointer; color: var(--g); background: rgba(0, 10, 5, 0.5); border: 1.5px solid var(--g-line);
+  box-shadow: 0 0 24px rgba(141, 255, 176, 0.12); transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease, transform 160ms ease-out, opacity 400ms ease; }
+.eva__mic.is-listening { background: var(--g); color: #021006; border-color: var(--g); box-shadow: 0 0 0 0 rgba(141, 255, 176, 0.5); animation: eva-ring 1.2s ease-out infinite; }
+@keyframes eva-ring { to { box-shadow: 0 0 0 16px rgba(141, 255, 176, 0); } }
+.eva__back { position: fixed; z-index: 6; bottom: max(36px, env(safe-area-inset-bottom)); left: calc(50% - 64px); translate: -100% 0; min-height: 40px; }
+.eva.is-quiet .eva__chrome, .eva.is-quiet .eva__mic, .eva.is-quiet .eva__back { opacity: 0; pointer-events: none; }
+.eva__loader { position: fixed; inset: 0; z-index: 7; display: grid; place-content: center; text-align: center; background: #050706;
+  font-family: var(--nhis-font-family-mono); letter-spacing: 0.3em; color: #d6ffe2; }
+.eva__loader p { margin: 0; }
+.eva__loader-sub { margin-top: 10px !important; font-size: 11px; letter-spacing: 0.24em; color: var(--g-dim); }
+.eva__sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+@media (prefers-reduced-motion: reduce) {
+  .hud__panel, .hud__wave i, .hud__rec, .hud__caret, .hud__cursor, .eva__mic.is-listening { animation: none; }
+  .eva__optic { transition: none; }
+}

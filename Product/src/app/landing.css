@@ -92,7 +92,7 @@
 .ld__key { min-width: 24px; height: 24px; display: inline-grid; place-items: center; font-family: var(--nhis-font-family-mono); font-size: 12px; color: var(--nhis-color-text-secondary); border: var(--nhis-border-hairline) solid var(--nhis-color-border-control); }
 
 .ld__foot { display: grid; gap: 6px; padding: 16px 0 18px; border-top: var(--nhis-border-hairline) solid var(--nhis-color-border-subtle); }
-.ld__note, .ld__disclaimer { margin: 0; max-width: 120ch; font: var(--nhis-type-meta-font); }
+.ld__note, .ld__disclaimer { justify-self: center; margin: 0; max-width: 120ch; font: var(--nhis-type-meta-font); text-align: center; }
 .ld__note { color: var(--nhis-color-text-muted); }
 .ld__disclaimer { color: var(--nhis-color-text-muted); font-size: 12px; }
 .ld__back { justify-self: start; margin-top: 8px; font: var(--nhis-type-action-font); color: var(--nhis-color-text-primary); text-decoration: none; padding: 8px 0; }

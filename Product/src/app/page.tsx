@@ -14,7 +14,7 @@ const MODES = [
   {
     href: '/eva', key: '2', code: 'EVA-02', name: 'NASTRA EVA', context: 'Helmet HUD',
     body: 'Voice-first and glanceable. Essential status and critical alerts when hands and attention are busy.',
-    cta: 'Preview EVA', status: 'standby', statusLabel: 'In development', glyph: 'eva',
+    cta: 'Enter EVA', status: 'ready', statusLabel: 'Ready', glyph: 'eva',
   },
 ] as const;
 
@@ -47,7 +47,7 @@ export default function Landing() {
       <ModeKeys routes={MODES.map((m) => m.href)} />
 
       <header className="ld__bar">
-        <span className="ld__credit">By <strong>Maple One</strong> team for NASA Space Apps Hackathon 2026</span>
+        <span className="ld__credit">By <strong>Maple One</strong> team for NASA Space Apps Hackathon 2026, Kiarash Kia, Upayan Chatterjee</span>
         <span className="ld__readouts">
           <UtcClock />
           <span className="ld__sep" aria-hidden="true" />

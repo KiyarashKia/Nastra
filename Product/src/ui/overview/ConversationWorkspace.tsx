@@ -246,7 +246,7 @@ function AssessmentBlock({ reply }: { reply: NastraReply }) {
 function EscalationFollowup({ reply }: { reply: NastraReply }) {
   return (
     <>
-      <p className="st-esc-chip" role="note"><PriorityBadge priority="warning" /> <span>{reply.escalation?.status ?? 'Escalation active'}</span></p>
+      <p className="st-esc-chip" role="note"><span className="st-esc-chip__dot" aria-hidden="true" /><span><strong>Escalation active</strong> · {reply.escalation?.status ?? 'Waiting for receipt.'}</span></p>
       <p className="st-text">{reply.explanation}</p>
       {reply.steps.length > 0 && <ol className="st-safety__steps">{reply.steps.map((s) => <li key={s}>{s}</li>)}</ol>}
     </>

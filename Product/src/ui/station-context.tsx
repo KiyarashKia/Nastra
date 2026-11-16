@@ -182,7 +182,7 @@ export function StationProvider({ children }: { children: ReactNode }) {
           } else if (msg.type === 'reply') {
             const reply = msg.reply as NastraReply;
             if (progressShown) markItem(progressId, { state: 'done' } as Partial<ChatItem>);
-            const role = reply.action === 'escalate' ? 'system' : 'nastra';
+            const role = reply.action === 'escalate' && !reply.followup ? 'system' : 'nastra';
             push({ id: uid('r'), at: nowIso(), role, kind: 'reply', reply });
             if (reply.action === 'escalate' && !reply.followup) {
               push({ id: uid('ev'), at: nowIso(), role: 'system', kind: 'event', tone: 'safety', text: `Event escalated · ${reply.protocol?.code ?? 'PRT-SY-01'} · ${reply.alert?.delivered ? 'flight surgeon alerted' : 'alert NOT delivered — use the voice loop'}` });

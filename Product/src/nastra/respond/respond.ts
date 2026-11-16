@@ -81,7 +81,7 @@ export async function explain(
         messages.push({ role: 'user', content: 'Return only {"explanation": string, "cited": string[]}.' });
         continue;
       }
-      const v = validateExplanation(parsed.data.explanation, ids, opts.evidence.map((e) => e.title), { hasPattern: opts.evidence.some((e) => e.kind === 'pattern') });
+      const v = validateExplanation(parsed.data.explanation, ids, opts.evidence.map((e) => e.title), { hasPattern: opts.evidence.some((e) => e.kind === 'pattern'), requireCitation: opts.stage !== 'escalated' });
       if (v.ok) {
         return { text: parsed.data.explanation.trim(), cited: v.cited, source: 'model', attempts: attempt, latencyMs, validation: v, violationsSeen };
       }

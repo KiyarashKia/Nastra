@@ -28,7 +28,7 @@ export function validateExplanation(
   text: string,
   evidenceIds: string[],
   sourceNames: string[] = [],
-  opts: { hasPattern?: boolean } = {},
+  opts: { hasPattern?: boolean; requireCitation?: boolean } = {},
 ): ValidationResult {
   const violations: string[] = [];
   // Talking about past episodes is only allowed when code found one and put it in the evidence.
@@ -45,7 +45,7 @@ export function validateExplanation(
   const cited = [...new Set([...text.matchAll(/\[(E\d+)\]/g)].map((m) => m[1]))];
   const unknown = cited.filter((c) => !evidenceIds.includes(c));
   if (unknown.length) violations.push(`unknown citation: ${unknown.join(', ')}`);
-  if (evidenceIds.length && cited.length === 0) violations.push('no citations');
+  if (opts.requireCitation !== false && evidenceIds.length && cited.length === 0) violations.push('no citations');
 
   // Any sentence with a number must carry a citation.
   for (const sentence of text.split(/(?<=[.!])\s+/)) {

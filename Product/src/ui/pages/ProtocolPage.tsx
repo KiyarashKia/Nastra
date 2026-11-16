@@ -27,7 +27,8 @@ export function ProtocolPage() {
         </section>
       ) : (
         <div className="st-protocol st-fill">
-          <section>
+          <section aria-labelledby="st-active-protocol">
+            <h2 id="st-active-protocol" className="st-sr-only">Active protocol</h2>
             <ProtocolStepper title={a.title} protocolId={a.code} state={a.state === 'completed' ? 'completed' : 'active'}
               steps={a.steps.map((s) => ({ id: s.id, title: s.title, detail: s.detail, state: s.state, actor: s.actor as 'crew' | 'nastra' | 'ground' | 'system' }))} />
             <p className="st-hint">Started <Time value={{ iso: a.startedAt, system: 'UTC' }} seconds={false} /> · {a.done} of {a.steps.length} steps done · protocol {a.code} v{a.version} ({a.status})</p>

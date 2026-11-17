@@ -8,11 +8,11 @@
 
 Health context that lives onboard, for when Earth is too far to answer in time.
 
-[**Live demo**](https://nastra-kappa.vercel.app/) · [How it works](#one-sentence-seven-layers) · [How we built it](#how-we-built-it) · [Sources](#sources-and-what-they-changed) · [Safety model](#safety-lives-outside-the-model) · [Run it](#run-it-locally)
+[**Live demo**](https://nastra.kiarash-is.me/) · [How it works](#one-sentence-seven-layers) · [How we built it](#how-we-built-it) · [Sources](#sources-and-what-they-changed) · [Safety model](#safety-lives-outside-the-model) · [Run it](#run-it-locally)
 
 Built by **Maple One** for the NASA Space Apps Challenge 2026
 
-![Next.js 16](https://img.shields.io/badge/Next.js-16-000?logo=nextdotjs) ![React 19](https://img.shields.io/badge/React-19-149eca?logo=react) ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6?logo=typescript&logoColor=white) ![Gemma 4](https://img.shields.io/badge/Gemma_4-26B_A4B-4285f4) ![Supabase](https://img.shields.io/badge/Supabase-Postgres_+_pgvector-3ecf8e?logo=supabase&logoColor=white) ![WCAG 2.2 AA](https://img.shields.io/badge/WCAG_2.2_AA-0_violations-38bdf8) ![Tests](https://img.shields.io/badge/tests-108_passing-67f373)
+![Next.js 16](https://img.shields.io/badge/Next.js-16-000?logo=nextdotjs) ![React 19](https://img.shields.io/badge/React-19-149eca?logo=react) ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6?logo=typescript&logoColor=white) ![Gemma 4](https://img.shields.io/badge/Gemma_4-26B_A4B-4285f4) ![Supabase](https://img.shields.io/badge/Supabase-Postgres_+_pgvector-3ecf8e?logo=supabase&logoColor=white) ![axe-core WCAG 2.2 AA](https://img.shields.io/badge/axe--core_WCAG_2.2_AA-0_violations_detected-38bdf8) ![Tests](https://img.shields.io/badge/tests-108_passing-67f373)
 
 <img src="docs/media/mode-select.png" alt="NASTRA mode select: NASTRA Station for the crew laptop, NASTRA EVA for the helmet HUD" width="100%" />
 
@@ -30,7 +30,7 @@ The data to understand that sentence already exists. Heart rate, sleep, stress, 
 
 The signals exist. The context doesn't.
 
-NASTRA is that missing layer. It connects body, mind, mission and history the moment something feels off, and it keeps every safety-critical decision out of the AI's hands.
+NASTRA is that missing layer. Its innovation is the governed context layer around the model. The moment something feels off, it turns a symptom into a structured health event and connects physiology, psychology, mission context and longitudinal history. Then deterministic software controls safety, tools, protocols and validation, and the model handles language.
 
 > NASTRA is a concept prototype. It is not affiliated with, endorsed, approved or certified by NASA or CSA, and makes no claim of operational readiness. All crew data is simulated. It is not a medical device, and it does not diagnose or replace a flight surgeon.
 
@@ -60,9 +60,9 @@ Here is what happens when the crew member says "I feel the room is tilting." The
 ```mermaid
 flowchart LR
     A["Crew input<br/>text · voice · photo"] --> B["Safety screen<br/><b>code</b><br/>red flags, before any model"]
-    B -- red flag --> X["Escalation<br/><b>code</b><br/>surgeon handover"]
+    B -- red flag --> X["Escalation<br/><b>code</b><br/>handover to simulated ground console"]
     B -- clear or unknown --> C["Interpret<br/><b>model</b><br/>sentence to health event"]
-    C --> D["Protocol<br/><b>code</b><br/>1 of 4 approved paths"]
+    C --> D["Protocol<br/><b>code</b><br/>1 of 4 predefined paths"]
     D --> E["Context and evidence<br/><b>code</b><br/>allow-listed tools, NASA RAG"]
     E --> F["Explain<br/><b>model</b><br/>words only, from evidence"]
     F --> G["Validate and log<br/><b>code</b><br/>no diagnosis, numbers cited"]
@@ -92,7 +92,7 @@ This is a real assessment from the live demo. The measured data, the derived pat
 >
 > Association is not causation. A past benign episode never makes a new one safe.
 
-**6. It escalates with a handover, not a notification.** When a warning sign appears, the flight surgeon gets a brief built in code: the trigger in the crew member's own words, flagged data with numbers, the full conversation, and the model's reading labelled unverified. The alert shows when it was sent and when it was received, after the real link delay (simulated).
+**6. It escalates with a handover, not a notification.** When a warning sign appears, NASTRA generates and sends a structured handover to the simulated flight-surgeon ground console. Code builds it: the trigger in the crew member's own words, flagged data with numbers, the full conversation, and the model's reading labelled unverified. The alert shows when it was sent and when it was received, after a simulated link delay.
 
 **7. It stays with you after a warning.** After an escalation, NASTRA doesn't start over and doesn't repeat itself. It keeps the whole conversation, answers what you actually said, and shows one quiet line with the status of your alert.
 
@@ -157,7 +157,7 @@ We split "understanding" from "deciding."
 
 The model's first job is narrow: read one message and fill a fixed form. Speech act, domain, body system, symptoms, onset, severity, confidence, what's missing. Zod turns that form into a strict JSON schema, and anything off-schema is rejected.
 
-Then code takes over. A router picks the action (answer, protocol, follow-up, escalate), and a protocol engine runs the approved steps. The model's second job is to write the explanation, from evidence that code already chose.
+Then code takes over. A router picks the action (answer, protocol, follow-up, escalate), and a protocol engine runs the predefined steps. The model's second job is to write the explanation, from evidence that code already chose.
 
 We first ran a small Qwen model (28 / 28 on our eval). We switched to Gemma 4 26B A4B because the hackathon asks for no China affiliation, and because Gemma is open weights under Apache 2.0. It is a mixture of experts with 25.2B parameters stored and 3.8B active per token (Google DeepMind, n.d.), so it runs close to a small model while understanding like a larger one. It reads images too, so one model covers text and photos.
 
@@ -173,15 +173,15 @@ That day shaped the whole safety model. The red-flag screen now runs before any 
 
 The model is not allowed to rely on what it remembers. We took a dated snapshot of six NASA Human Research Program risk pages, split them into 18 chunks, and embedded them locally with gte-small (Li et al., 2023) through Transformers.js. The pages come from NASA's Risks of Human Spaceflight index (NASA, 2026b).
 
-Those pages describe research risks. They are not clinical protocols, so NASTRA never presents them as treatment steps. They give context and evidence. The approved protocol decides what the crew member is asked to do.
+Those pages describe research risks. They are not clinical protocols, so NASTRA never presents them as treatment steps. They give context and evidence. The active protocol workflow decides what the crew member is asked to do.
 
-Retrieval filters by the tags the active protocol allows first, then ranks by vector similarity in pgvector. Why filter first? A dizziness protocol should only ever see vestibular and related evidence, however similar some other text looks. Every answer and every surgeon brief carries the source link. On our knowledge test, every query lands on the right risk page (7 / 7).
+Retrieval filters by the tags the active protocol allows first, then ranks by vector similarity in pgvector. Why filter first? A dizziness protocol should only ever see vestibular and related evidence, however similar some other text looks. NASTRA retrieves and cites NASA HRP evidence when relevant to an assessment or handover. On our knowledge test, every query lands on the right risk page (7 / 7).
 
 ### 6. A handover, not a notification
 
 The first escalation only said "answered yes to the warning-signs check." That is useless to a flight surgeon.
 
-Now code builds the brief: the trigger in the crew member's own words, the complaint, flagged data with numbers (heart rate +16 against their own post-exercise usual, three short nights, stress 4 of 5, two past dizziness episodes, EVA in 40 hours), the full conversation, and the model's reading labelled unverified. Built in code, so an emergency handover never waits on an API or contains a guess.
+Now code builds the brief for the simulated ground console: the trigger in the crew member's own words, the complaint, flagged data with numbers (heart rate +16 against their own post-exercise usual, three short nights, stress 4 of 5, two past dizziness episodes, EVA in 40 hours), the full conversation, and the model's reading labelled unverified. Built in code, so an emergency handover never waits on an API or contains a guess.
 
 The idea behind it comes from NASA's longitudinal health surveillance brief (NASA Office of the Chief Health and Medical Officer [OCHMO], 2023). Tracking crew health over time is why every event is logged with its outcome, and why the history can be searched for similar episodes later.
 
@@ -189,13 +189,13 @@ The idea behind it comes from NASA's longitudinal health surveillance brief (NAS
 
 NASTRA Station runs on NHIS, our own design system: React Aria for accessible primitives, Atkinson Hyperlegible for type, tokens with automated contrast checks. On top, a Spectre-style skin gives it the instrument-panel look: square corners, mono labels, HUD brackets. Cyan is used only for structure, so alert colours always mean alerts.
 
-The rule was one screen, no scroll, from 1280 x 720 up. When space runs out, lower-value detail gives way first. The "association, not causation" caveat never does. Every page passes axe-core WCAG 2.2 AA with zero violations, including mid-escalation.
+The rule was one screen, no scroll, from 1280 x 720 up. When space runs out, lower-value detail gives way first. The "association, not causation" caveat never does. axe-core detects zero WCAG 2.2 AA violations across the six tested pages and states, including mid-escalation.
 
 Two outside references shaped this screen. NIST's usability work on health records (Lowry et al., 2012) is why the crew member's identity is always visible in the header. The Web Content Accessibility Guidelines 2.2 (World Wide Web Consortium [W3C], 2023) set the bar we tested against: level AA.
 
 ### 8. Bugs only real runs could find
 
-Some of our best fixes came from using it, not from testing it.
+Some of our best fixes came from using it, not from testing it. Every failure found during real use becomes a regression test.
 
 A heart-rate tile once showed "0 bpm, -69 vs baseline." In JavaScript, `Number(null)` is 0, so an empty comparison window read as zero. Worse, that zero would have reached the model as evidence. We fixed it at the source.
 
@@ -215,7 +215,7 @@ The visor scene is cinematic footage (AI-generated, and labelled as such) drawn 
 
 ### 11. Shipping it
 
-NASTRA deploys to Vercel straight from this repo, with data on Supabase. Keys stay server-side. The browser never touches the database, row level security blocks the browser roles, and only named functions are callable.
+NASTRA deploys to Vercel straight from this repo, with data on Supabase. Keys stay server-side. The browser never touches the database, row level security blocks the browser roles, and only named functions are callable. Speech-to-text and embeddings run locally, photos are processed in memory and never stored, and database access is server-side with row level security.
 
 ---
 
@@ -227,9 +227,9 @@ NASTRA deploys to Vercel straight from this repo, with data on Supabase. Keys st
 | Safety screen eval: every emergency escalates before the model is called | 28 / 28 |
 | NASA knowledge retrieval: every query lands on the right HRP risk page | 7 / 7 |
 | Automated tests, including replays of real failed chats | 108 passing |
-| Accessibility, axe-core WCAG 2.2 AA on all 6 pages | 0 violations |
+| Accessibility, axe-core WCAG 2.2 AA, six tested pages and states | 0 detected violations |
 | Simulated mission data | 21 days, 3 crew, live feed every 150 s |
-| Protocols | 4 (sensorimotor, behavioral health, general physical, red-flag response) |
+| Protocol workflows | 4 (sensorimotor, behavioral health, general physical, red-flag response) |
 
 <img src="docs/media/station-telemetry.png" alt="Station telemetry: heart rate trend against the crew member's own 14-day band, latest readings with band labels, data age shown" width="100%" />
 
@@ -237,11 +237,11 @@ NASTRA deploys to Vercel straight from this repo, with data on Supabase. Keys st
 
 ## Sources, and what they changed
 
-We were asked to use NASA data. We wanted to use it where it changes decisions, not as decoration. Direct means the source is ingested, searched at runtime and cited on screen. Indirect means it shaped the design, the data or the rules.
+We were asked to use NASA data. We wanted to use it where it changes decisions, not as decoration. NASA HRP resources are not just cited in the interface. Six risk pages are ingested, tagged, embedded and retrieved only when permitted by the active protocol. Direct means the source is ingested, searched at runtime and cited on screen. Indirect means it shaped the design, the data or the rules.
 
 | Source | Use | What it changed in NASTRA |
 |---|---|---|
-| NASA, Risks of Human Spaceflight (NASA, 2026b) | Direct | Six risk pages became 18 searchable chunks, cited with a link in every answer and in the surgeon brief. Their tags decide what each protocol is allowed to retrieve. |
+| NASA, Risks of Human Spaceflight (NASA, 2026b) | Direct | Six risk pages became 18 searchable chunks, cited with a link in assessments and handovers when relevant. Their tags decide what each protocol is allowed to retrieve. |
 | NASA, 5 Hazards of Human Spaceflight (NASA, 2026a) | Indirect | The five hazards became mission-context fields. Distance from Earth set the onboard-first design. |
 | NASA, Ongoing HRP Research (NASA, 2026c) | Indirect | Precedent for joining crew health data in one place (Artemis II well-being and sleep studies, a telemedicine device). It shaped the pitch, not the code. |
 | NASA, Spaceflight Standard Measures (NASA, n.d.) | Indirect | The simulated sleep, mood, stress and activity records follow its fields. Validating against it is next. |
@@ -251,7 +251,7 @@ We were asked to use NASA data. We wanted to use it where it changes decisions, 
 | CSA, Why do we conduct science experiments in space? (CSA, 2025) | Indirect | The framing: longer missions mean more isolation and less access to emergency care. It shaped the story, not the code. |
 | Wu (2025), Earth independent operations | Indirect | Communication delay beyond low Earth orbit. Escalation shows sent and received times after a simulated link delay (2.6 s round trip here, far shorter than a real Mars delay). |
 | NIST IR 7804 (Lowry et al., 2012) | Indirect | Crew identity stays visible on every screen. |
-| WCAG 2.2 (W3C, 2023) | Indirect | The AA target, contrast checks in our design tokens, and axe-core audits on all pages. |
+| WCAG 2.2 (W3C, 2023) | Indirect | The AA target, contrast checks in our design tokens, and axe-core audits on the six tested pages and states. |
 | Gemma 4 model card (Google DeepMind, n.d.) | Indirect | The reason we chose 26B A4B: open weights, mixture of experts, image input. The edge sizes (E2B, E4B) give EVA a path to real hardware. |
 | Whisper (Radford et al., 2022) and gte-small (Li et al., 2023) | Indirect | Speech to text and embeddings both run on the local machine. |
 
@@ -294,23 +294,6 @@ NASTRA_DB=pglite NASTRA_LLM=stub npm run dev
 
 On Windows PowerShell: `$env:NASTRA_DB="pglite"; $env:NASTRA_LLM="stub"; npm run dev`
 
-**Full stack.** Create `Product/.env.local`:
-
-```bash
-OPENROUTER_API_KEY=...
-SUPABASE_URL=...
-SUPABASE_SECRET_KEY=...           # server-only, never exposed to the browser
-NASTRA_MODEL_INTERPRET=google/gemma-4-26b-a4b-it
-NASTRA_MODEL_RESPOND=google/gemma-4-26b-a4b-it
-```
-
-Apply `Product/supabase/migrations` in order, then load the NASA knowledge and start:
-
-```bash
-npm run ingest      # embeds the NASA HRP snapshot locally and stores it
-npm run dev         # open http://localhost:3000, then press "Reset demo data"
-```
-
 Useful scripts:
 
 ```bash
@@ -339,12 +322,21 @@ Nastra/
 
 ---
 
+## Super intelligence as an accelerator
+
+We used Super Intelligence (SI) as an accelerator, for four things specifically: developing the original idea of ours by leveraging proper technologies, debugging, generating the EVA visor video, and improving the writing. English is not our first language, so SI helped say what I mean clearly.
+
+It made the process much faster, and it let us deliver two working prototypes. The model and logic are already implemented. Real data can be integrated by replacing the simulated feed behind the same tools.
+
+---
+
 ## Honest limits
 
+- The architecture is designed for future onboard inference. The current prototype uses hosted Gemma inference, while database logic, speech-to-text and embeddings already have local execution paths.
 - All crew data is simulated, labelled on every screen, and modelled on CSA Bio-Monitor channels. Going live means replacing the simulated feed behind the same tools.
-- The red-flag list was written by the team for this prototype. A flight surgeon would need to review it before any real use.
+- The red-flag list and the protocol workflows were written by the team for this prototype. A flight surgeon would need to review them before any real use.
 - The EVA voice flow is scripted, and its visor footage is AI-generated.
-- Whisper and local embeddings run on a local machine. On the hosted demo, knowledge search falls back to tag ranking and Station voice may be unavailable.
+- Whisper and local embeddings run on a local machine. On the hosted demo, knowledge search falls back to tag ranking and Station speech-to-text may be unavailable on live demo.
 
 ## What's next
 

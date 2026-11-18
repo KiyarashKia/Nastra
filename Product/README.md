@@ -29,7 +29,7 @@ Product/
 
 ## Reset the demo data
 
-Run in the Supabase SQL editor (or ask Claude to run it) right before a demo:
+Run in the Supabase SQL editor right before a demo:
 
 ```sql
 select public.nastra_reseed();   -- "now" becomes 16:00 station time, mission day 42

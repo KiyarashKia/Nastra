@@ -30,7 +30,7 @@ export function normalizeInput(raw: RawInput): InputEnvelope {
     kind: a.kind,
     name: a.name,
     text: a.text ? clean(a.text).slice(0, MAX_ATTACHMENT_TEXT) : undefined,
-    // Image-derived values are never trusted until confirmed (CLAUDE.md rule).
+    // Image-derived values are never trusted until confirmed.
     confirmed: a.kind === 'image' ? Boolean((a as { confirmed?: boolean }).confirmed) : true,
   }));
 

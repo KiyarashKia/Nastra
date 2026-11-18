@@ -1,7 +1,7 @@
 /**
  * Output validation for the model's explanation. Deterministic.
  * Anything that fails here is regenerated once, then replaced by a
- * fact-only fallback. Rules come from CLAUDE.md hard safety boundaries:
+ * fact-only fallback. Rules follow these hard safety boundaries:
  * never diagnose, never infer causation, never downgrade a concern.
  */
 export interface ValidationResult {
